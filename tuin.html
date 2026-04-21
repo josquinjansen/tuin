@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4a5d3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tuin">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%234a5d3a'/%3E%3Ctext x='90' y='120' font-size='100' text-anchor='middle' fill='%23f4f1ea'%3E🌿%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌿%3C/text%3E%3C/svg%3E">
+<title>Tuin</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f4f1ea;
+    color: #2c3a26;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+  body { padding-bottom: 80px; }
+  header {
+    background: #4a5d3a;
+    color: #f4f1ea;
+    padding: 20px 16px 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 22px; font-weight: normal; letter-spacing: 0.5px; }
+  header .sub { font-size: 13px; opacity: 0.85; margin-top: 4px; font-style: italic; }
+
+  /* Month selector */
+  .month-select {
+    background: #ebe6d8;
+    padding: 12px 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-bottom: 1px solid #d4cdb8;
+    position: sticky; top: 78px; z-index: 9;
+  }
+  .month-select::-webkit-scrollbar { display: none; }
+  .month-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-right: 6px;
+    background: transparent;
+    border: 1px solid #8a9479;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #4a5d3a;
+    cursor: pointer;
+  }
+  .month-btn.active { background: #4a5d3a; color: #f4f1ea; border-color: #4a5d3a; }
+
+  /* Tabs */
+  .tabs {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #4a5d3a;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) 0;
+    border-top: 1px solid #3a4a2a;
+    z-index: 10;
+  }
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #a8b89a;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 8px 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .tab-btn .ico { font-size: 22px; }
+  .tab-btn.active { color: #f4f1ea; }
+
+  /* Zone filter */
+  .zone-filter {
+    padding: 8px 12px;
+    overflow-x: auto;
+    white-space: nowrap;
+    background: #f4f1ea;
+  }
+  .zone-filter::-webkit-scrollbar { display: none; }
+  .zone-btn {
+    display: inline-block;
+    padding: 4px 10px;
+    margin-right: 4px;
+    background: transparent;
+    border: 1px solid #b8ae94;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 12px;
+    color: #6b6247;
+    cursor: pointer;
+  }
+  .zone-btn.active { background: #8a7d5c; color: #f4f1ea; border-color: #8a7d5c; }
+
+  /* Cards */
+  main { padding: 12px; }
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 3px solid #8a9479;
+  }
+  .card.has-issues { border-left-color: #c48464; }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .card-icon { font-size: 22px; flex-shrink: 0; }
+  .card-title { flex: 1; min-width: 0; }
+  .card-title h3 {
+    margin: 0 0 2px 0;
+    font-size: 16px;
+    font-weight: normal;
+    color: #2c3a26;
+  }
+  .card-title .sub { font-size: 12px; color: #6b6247; font-style: italic; }
+  .issues {
+    background: #fcf3ed;
+    border-left: 3px solid #c48464;
+    padding: 8px 10px;
+    margin: 8px 0;
+    font-size: 13px;
+    color: #6b4a38;
+    border-radius: 3px;
+  }
+  .tasks { margin-top: 8px; }
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0ebe0;
+  }
+  .task:last-child { border-bottom: none; }
+  .task-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #8a9479;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: transparent;
+  }
+  .task-check.done {
+    background: #4a5d3a;
+    border-color: #4a5d3a;
+    color: #f4f1ea;
+  }
+  .task-body { flex: 1; min-width: 0; }
+  .task-text {
+    font-size: 14px;
+    color: #2c3a26;
+  }
+  .task.done .task-text {
+    text-decoration: line-through;
+    color: #8a9479;
+  }
+  .task-info-btn {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #dbd4bd;
+    color: #4a5d3a;
+    font-size: 11px;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    vertical-align: text-bottom;
+  }
+  .task-info-btn:hover { background: #c4bc9f; }
+  .task-info {
+    display: none;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f4f1ea;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #4a5d3a;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+  .task-info.open { display: block; }
+  .innovatie {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #eef0e6;
+    border-left: 3px solid #8a9479;
+    font-size: 13px;
+    color: #4a5d3a;
+    font-style: italic;
+    border-radius: 3px;
+  }
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8a9479;
+    font-style: italic;
+  }
+
+  /* Planten tab: alphabetical list */
+  .plant-link {
+    display: block;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: #2c3a26;
+    font-size: 15px;
+    border-left: 3px solid #8a9479;
+  }
+  .plant-link .p-sub { font-size: 12px; color: #6b6247; font-style: italic; }
+
+  /* Order alerts */
+  .order-card {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-left: 3px solid #b8934f;
+  }
+  .order-item { font-weight: 600; color: #2c3a26; font-size: 14px; }
+  .order-reason { font-size: 13px; color: #6b6247; margin-top: 3px; }
+  .order-month-label {
+    font-size: 13px;
+    color: #8a7d5c;
+    margin: 16px 0 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .order-month-label:first-child { margin-top: 0; }
+
+  /* Weather */
+  .weather-card {
+    background: white;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border-left: 3px solid #6b8fa8;
+  }
+  .weather-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: normal;
+    color: #2c3a26;
+  }
+  .weather-card h4 .emo { margin-right: 6px; }
+  .weather-card ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: #4a5d3a;
+  }
+  .weather-card li { margin-bottom: 4px; }
+
+  /* Innovations */
+  .inno-card {
+    background: white;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border-left: 3px solid #7a9a7a;
+  }
+  .inno-card h4 {
+    margin: 0 0 6px 0;
+    font-size: 15px;
+    font-weight: normal;
+  }
+  .inno-desc { font-size: 13px; color: #4a5d3a; margin-bottom: 6px; }
+  .inno-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #6b6247;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .inno-meta span::before { content: '• '; }
+  .inno-meta span:first-child::before { content: ''; }
+
+  /* Plattegrond SVG */
+  .layout-svg {
+    display: block;
+    max-width: 100%;
+    margin: 10px auto;
+    background: #f4f1ea;
+    border-radius: 6px;
+  }
+
+  /* Reset button */
+  .reset-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid #b8ae94;
+    color: #6b6247;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 16px;
+    cursor: pointer;
+  }
+
+  .info-box {
+    background: #eef0e6;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #4a5d3a;
+    line-height: 1.6;
+  }
+  .info-box strong { color: #2c3a26; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 Tuin-onderhoud</h1>
+  <div class="sub">700m² · bos + sloot · sedum dak · 3 appelbomen</div>
+</header>
+
+<div class="month-select" id="monthSelect"></div>
+
+<main id="content"></main>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="taken"><span class="ico">✓</span>Taken</button>
+  <button class="tab-btn" data-tab="planten"><span class="ico">🌿</span>Planten</button>
+  <button class="tab-btn" data-tab="bestellen"><span class="ico">📦</span>Bestellen</button>
+  <button class="tab-btn" data-tab="weer"><span class="ico">🌤️</span>Weer</button>
+  <button class="tab-btn" data-tab="innovatie"><span class="ico">💡</span>Tips</button>
+</div>
+
+<script>
+// === DATA ===
+const MONTHS = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
+
+const ZONES = {
+  voor: { label: 'Voortuin', icon: '☀️', desc: 'ZW 240° · zonnig, droog-gevoelig · gazon, sierappel, sierkers, lavendel, lage beukenhaag' },
+  zijkant: { label: 'Zijkant', icon: '🌬️', desc: 'Oprit + hoge beukenhaag (doorlopend), slootrand met knotwilgen (links)' },
+  achter: { label: 'Achtertuin', icon: '🌲', desc: 'NO 60° · 30m diep · 3 microklimaat-zones (terras warm → midden gemengd → bos koel)' },
+  muur: { label: 'Klimmuur NW (320°)', icon: '🏠', desc: 'Middag/avondzon, geen ochtendzon · ideaal voor klimhortensia' },
+  dak: { label: 'Sedum-dak', icon: '🏠', desc: 'Plat dak · 7+ jaar · transitiefase (mos/gras)' },
+  terras: { label: 'Terras achter', icon: '🏠', desc: 'Tegels · Boom 1 + 2 op/naast terras · overkapping met houtkachel' },
+  konijnen: { label: 'Koko & Dropje', icon: '💡', desc: 'Hok/ren bij buurschuur (halverwege tuin links)' },
+  algemeen: { label: 'Algemeen', icon: '💡', desc: 'Gereedschap, techniek, gidsen' }
+};
+
+const PLANTS = {
+  gazon_achter: {
+    name: 'Gazon achter', icon: '🌱', zone: 'achter',
+    sub: 'Schaduw/mos-gevoelig',
+    issues: 'Schaduw door bos, vochtig, bladval in najaar. Grenst aan bos = veel organisch materiaal.',
+    tasks: {
+      2: [{
+        text: 'Kalk strooien tegen mos (150-200 g/m²) bij droog weer',
+        info: 'Mos gedijt op zure grond (pH <6). Kalk verhoogt de pH waardoor gras het wint van mos. Gebruik "Dolokal" of gewone tuinkalk — niet gebluste kalk, die is te agressief.\n\nStrooi bij droog weer en verwacht daarna 1-2 dagen droogte, anders spoelt het weg. Na 2-3 weken reageert het gazon. Herhaal niet vaker dan 1× per jaar.'
+      }],
+      3: [
+        {
+          text: 'Verticuteren als mos terugkomt',
+          info: 'Verticuteren = mos + dode grasresten (vilt) eruit harken met een verticuteermachine. Niet te diep — anders beschadig je gezonde graswortels. Doe dit bij droge bodem, anders rukt de machine grote plakken los.\n\nNa verticuteren ziet je gazon er dramatisch uit — niet schrikken, binnen 3-4 weken hersteld als je direct bijzaait.'
+        },
+        {
+          text: 'Bijzaaien schaduwmengsel (rietzwenk + veldbeemd)',
+          info: 'Zoek een mengsel met veel "rood zwenkgras" en "veldbeemdgras" — dé schaduwtolerante grassen. Engels raaigras werkt NIET in schaduw.\n\nZaaien bij bodemtemperatuur boven 10°C (meestal vanaf half maart). Harken, zaaien, licht intrillen met hark, 2-3 weken vochtig houden. Gras kiemt in 10-14 dagen.'
+        }
+      ],
+      4: [{
+        text: 'Eerste maaibeurt bij 8-10 cm — hoger maaien dan voorkant',
+        info: 'Regel van 1/3: maai nooit meer dan 1/3 van de grashoogte in één beurt. Gras van 10 cm → maximaal naar 6-7 cm.\n\nIn schaduw moet het gras langer blijven (5-6 cm) dan in zon (4-5 cm). Langer blad = meer fotosynthese = sterkere plant. Te kort maaien in schaduw = doodvonnis voor het gras en vrij spel voor mos.'
+      }],
+      5: [{
+        text: 'Organische schaduw-gazonmest (laag N, hoog K)',
+        info: 'Schaduwgras heeft andere voedingsbehoefte: minder stikstof (N) want minder groei mogelijk, meer kalium (K) voor sterke wortels en ziekteweerstand.\n\nKies een organische mest met NPK ongeveer 5-3-8 of "gazonmest schaduw". Vermijd reguliere gazonmest (vaak 10-3-5) — te veel N leidt tot slap gras dat schimmels aantrekt.'
+      }],
+      6: [{
+        text: 'Maaien op 6 cm — langer gras = sterker in schaduw',
+        info: 'In juni groeit het gras het hardst. Max 1× per week maaien, altijd op 6 cm houden. Met mulchmaaien (maaisel laten liggen) krijg je gratis bemesting terug.\n\nAls je gras eenmaal dik onder de boomkruinen staat, houd het zo — niet experimenteren met korter maaien "omdat het zomer is".'
+      }],
+      9: [{
+        text: 'Najaarsmest (kalium-rijk) voor wortelversterking',
+        info: 'Najaarsmest is fundamenteel anders dan voorjaarsmest: veel kalium (K), weinig stikstof (N). Kalium verdikt celwanden = vorstbestendiger, schimmelresistenter.\n\nStrooi eind augustus - half september. Later = risico dat gras nog doorgroeit en slap de winter ingaat. Zoek naar "herfst-gazonmest" of "patentkali".'
+      }],
+      10: [{
+        text: 'Bladeren uit bos wegharken — anders verstikking = mos',
+        info: 'Bladeren blokkeren licht en houden vocht vast = ideale condities voor mos en schimmel. Bij veel bladval (jouw situatie met bos): wekelijks harken, niet wachten tot alles gevallen is.\n\nBladeren zijn goud voor je borders — gooi ze daar tussen als mulch. Of maak bladcompost: zak bladeren in vuilniszak met gaatjes, een jaar wachten = beste bodemverbeteraar die er is.'
+      }],
+      11: ['Laatste maaibeurt op 5 cm, takken opruimen']
+    },
+    innovatie: 'Vervang de hopeloze schaduwplekken door mosgazon of kleine maagdenpalm. Past beter bij bosrand.'
+  },
+  gazon_voor: {
+    name: 'Gazon voor', icon: '☀️', zone: 'voor',
+    sub: 'Zon/droogte-gevoelig',
+    issues: 'Volle zon, droogtegevoelig in zomer.',
+    tasks: {
+      3: ['Verticuteren, bijzaaien met droogtebestendig mengsel (rood zwenkgras)'],
+      4: ['Eerste maaibeurt op 4-5 cm, organische langzaamwerkende mest'],
+      5: ['Maaien op 5 cm, diep beregenen (15 mm/week in één beurt)'],
+      6: ['Mulchmaaien: maaisel laten liggen = gratis stikstof'],
+      7: ['Bij hitte: 6-7 cm, laat bruin worden — komt terug'],
+      8: ['NIET bemesten in volle zomer'],
+      9: ['Najaarsmest + kale plekken bijzaaien'],
+      10: ['Laatste maaibeurt, bladeren afvoeren']
+    },
+    innovatie: 'Test microklaver (Trifolium repens). Blijft groen in droogte, fixeert stikstof, bijenvriendelijk. Inzaai april-mei.'
+  },
+  sedum_dak: {
+    name: 'Sedum groen dak', icon: '🏠', zone: 'dak',
+    sub: 'Plat dak — 7+ jaar oud, transitiefase',
+    issues: 'Dak is in de klassieke 7-10 jaar transitiefase: substraat raakt uitgeput, mossen en grassen beginnen te koloniseren. Dit is normaal — aanpak aanpassen aan deze fase voorkomt dat het dak richting mos-gras-dak afglijdt.',
+    tasks: {
+      3: [{
+        text: 'JAARLIJKSE VOORJAARSBEURT: alles in één keer (~1,5 uur)',
+        info: 'Na 7 jaar heb je méér resultaat van één goed-geplande voorjaarsbeurt dan van 5-6 losse zomerbeurten.\n\nSTAP 1 — AFVOER-INSPECTIE (prio 1):\n• Alle afvoerputjes open, vrij van bladeren/mos\n• Noodoverlopen (gaten in dakrand) vrij\n• Verstopte afvoer = water stapelt = 10cm water = 100kg/m² extra belasting\n\nSTAP 2 — LICHTE BEMESTING:\n• Sedum-mest NPK ~4-2-8, dosering 20-30g/m² (meer = gras/onkruid)\n• Dit herstelt sedum-dominantie: sedum wint weer van mos en gras\n• Strooi bij regenachtig weer of sproei zacht na\n\nSTAP 3 — KALK OP MOSPLEKKEN (nieuw):\n• Tuinkalk 50g/m² over knalgele mosplekken (zie mos-taak april)\n• Mos houdt niet van hoge pH, sedum juist wel\n\nSTAP 4 — VOORUITKIJKEN:\n• Is het dak 8+ jaar? Overweeg substraat-top-up in september'
+      }],
+      4: [
+        {
+          text: 'MOS-AANPAK: gele mosplekken verwijderen',
+          info: 'HET KNALGELE MOS dat je ziet is Schoorsteenmos (Ceratodon purpureus) of Gewoon dikkopmos. Pioniermos dat duidt op:\n• Uitgeput substraat (typisch na 6-8 jaar)\n• Lagere pH (verzuring door organisch materiaal)\n• Meer vocht op plekken waar sedum verzwakt\n\nIS HET SCHADELIJK? Niet direct — mos parasiteert niet. Maar:\n• Houdt vocht tegen substraat = gunstiger voor mos, ongunstiger voor sedum\n• Verstikt trager-groeiende sedum eronder\n• Verspreidt exponentieel via sporen\n\nAANPAK IN STAPPEN:\n1. In maart kalk gestrooid (zie voorjaarsbeurt)? Wacht 2-3 weken\n2. Mos wordt bruin/rossig = afgestorven\n3. Met zachte harkbezem of gewoon met handen eruit halen\n4. Niet agressief schrapen — je beschadigt dakbedekking of sedumstek eronder\n5. Kale plekken direct met sedumstekken vullen (zie volgende taak)\n\nNIET doen: antimos-middelen (bevatten ijzersulfaat = beschadigt dakbedekking op lange termijn).'
+        },
+        {
+          text: 'Kale plekken bijplanten met sedumstekken',
+          info: 'Sedum breekt makkelijk af, die brokjes zijn gratis stekmateriaal:\n\n1. Van een gezond plekje breek je stukjes van 3-5 cm (ruim nemen, het regenereert)\n2. Leg op de kale plek — niet ingraven\n3. Licht indrukken voor contact met substraat\n4. 2-3 weken vochtig houden bij droog weer\n5. Wortels vormen zich binnen een maand\n\nMIX VOOR DIVERSITEIT (aanrader op ouder dak):\n• Sedum album (wit-bloeiend, verdraagt mos-concurrentie best)\n• Sedum spurium (roze)\n• Sedum reflexum (geel)\n• Sedum sexangulare (fijn groen)\n• Sempervivum (huislook — sterk op dunne plekken)\n\nKoop-variant voor grote vlakken: sedum-matten (Mobilane, Flexisedum) vanaf €25/m². Neerleggen, water, klaar.'
+        },
+        {
+          text: 'PAARDENBLOEMEN NU aanpakken — vóór zaadvorming',
+          info: 'Dé truc voor paardenbloemen: timing boven kwantiteit.\n\nEind april, BEGIN mei: alle paardenbloemen eruit VÓÓR ze zaden vormen (geel → wit "pluisbol"). Eén keer goed = de zomer rust.\n\nTECHNIEK:\n• Voegenkrabber of smal mesje werkt beter dan trekken\n• Steek in het hart van de wortel, licht wrikken\n• Bij paardenbloem op sedumdak kun je echt de hele penwortel uitkrijgen (substraat is dun)\n• Als je alleen de bovenkant plukt: komt gegarandeerd terug\n\nVERSPREIDING VOORKOMEN:\n• Één vergeten paardenbloem die tot pluisbol komt = 150 nieuwe zaden, waarvan ~30 kiemen op jouw dak\n• Daarom nu 30 min investeren > hele seizoen plukken\n\nBONUS: paardenbloem is eigenlijk eetbaar/medicinaal (salades, thee), dus niet weggooien maar evt. bewaren.'
+        }
+      ],
+      6: [{
+        text: 'Bij 3+ weken droogte: 1× goed beregenen',
+        info: 'Sedum is extreem droogtebestendig (CAM-fotosynthese). Kan wekenlang zonder water. Maar bij extreme droogte (>3 weken + hitte) kleurt hij rood/paars — stress-signaal.\n\nBEREGENEN:\n• EENMALIG goed: 20-30mm water in één beurt\n• Tuinslang met zachte regen-stand\n• \'s Avonds of vroege ochtend, nooit middag (verbranding)\n\nMINDER is meer — sedum raakt snel verslapt bij te veel water.\n\nINDICATOR: kleur terug naar groen = genoeg. Blijft rood: tweede beurt na 3-4 dagen.'
+      }],
+      9: [{
+        text: 'SUBSTRAAT-TOP-UP (als dak 8+ jaar is)',
+        info: 'Na ~8 jaar raakt substraat uitgeput — voedingsstoffen weg, organisch materiaal stapelt zich op, pH daalt. Dit is waarom mos en gras dit jaar plotseling opduiken.\n\nOPLOSSING VOOR DE LANGE TERMIJN: 1-2 cm verse extensieve substraat over de problematische plekken (of hele dak) strooien.\n\nWERKWIJZE:\n• Koop sedum-substraat bij tuincentrum (~€20 per zak, 40L)\n• Voor 10m² dak: 1-2 zakken = voldoende voor 1-2 cm laag\n• Strooi gelijkmatig, lichtjes inregenen\n• Sedum groeit er vrolijk doorheen\n\nTIMING: september is ideaal — nog warm genoeg voor sedum-groei, voor de winter gevestigd. Voorjaar kan ook.\n\nGeeft je opnieuw 5-7 jaar optimaal dak voordat volgende top-up nodig is.'
+      }],
+      10: [
+        {
+          text: 'BLADBEZEM-CHECK: dode materie eruit = preventie grasbollen',
+          info: 'Grasbollen ontstaan uit zaden die in dood organisch materiaal op het dak kiemen. Winter-schoonmaak = voorjaars-preventie!\n\nTIMING: na bladval, eind oktober/begin november.\n\nMETHODE:\n• Zachte bladbezem of straatbezem\n• Lichtjes over het dak vegen — zonder te schrapen\n• Haalt tegelijk weg: gevallen bladeren, grasresten van vorig jaar, gevallen zaden, stof-ophoping\n• Op stenen/grind randen: wel stevig vegen\n\nVolgend voorjaar: flink minder grasbollen omdat de zaden al weg zijn vóór ze kunnen kiemen.'
+        },
+        {
+          text: 'Bladeren verwijderen — verstikking is killer nr. 1',
+          info: 'NUMMER ÉÉN DOODSOORZAAK van sedumdaken: bladeren blijven liggen, vergaan tot modder, sedum krijgt geen licht = sterft.\n\nFREQUENTIE:\n• Veel omliggende bomen: wekelijks\n• Weinig bomen: 1× per 2 weken\n\nMETHODE:\n• Zachte bezem, niet harken\n• Bladblazer op laag vermogen werkt ook\n• Bladeren naar borders als mulch, of restafval\n\nKleine hoeveelheden bladeren in hoekjes zijn prima — het gaat om dikke lagen.'
+        }
+      ],
+      11: [{
+        text: 'Laatste check afvoer vóór winter',
+        info: 'Pre-winter checklist:\n• Alle afvoeren + noodoverlopen vrij\n• Dakbedekking inspecteren op scheuren (sedum is nu minimaal = goede visibility)\n• Geen losse potten/gereedschap op dak\n• Afvoer vrij van materiaal dat bij vorst kan uitzetten\n\nStrenge winter (<-15°C meerdere dagen): sedum kan bovengronds terugvriezen, komt in voorjaar weer uit wortels. Geen actie nodig.'
+      }]
+    },
+    innovatie: 'Na 7+ jaar is je dak in transitiefase. De "maandelijks plukken"-aanpak werkt minder goed — je jaagt symptomen. De SLIMME aanpak: één stevige voorjaarsbeurt (maart) met bemesting + kalk tegen mos + paardenbloemen weghalen vóór zaadvorming. En één herfstveeg (oktober) tegen grasbollen. Totaal ~2 uur per jaar. Investeer in substraat-top-up om de 5-7 jaar voor duurzaam behoud.'
+  },
+  sierkers_voor: {
+    name: 'Sierkers rechts voordeur', icon: '🌸', zone: 'voor',
+    sub: 'Prunus (geen vrucht) · groter van de twee',
+    issues: 'NIET in winter snoeien (loodglans-risico via vochtige snoeiwonden). Alleen bij droog weer in juni-augustus. Pure sierboom, geen vruchten.',
+    tasks: {
+      3: ['Lichte compost rondom druppellijn, niet tegen stam'],
+      4: ['Bloesem genieten — geen actie'],
+      7: ['Evt. lichte vormsnoei bij droog weer — kruisende/dode takken'],
+      10: ['Bladeren rond voet laten liggen als mulch']
+    },
+    innovatie: 'Onderplant met krokus, narcis, sneeuwroem voor vroeger voorjaar onder de kale takken — bloeit vóór de kersenbloesem, dubbel voorjaar zonder extra werk.'
+  },
+  sierappel_voor: {
+    name: 'Sierappel links voordeur', icon: '🍏', zone: 'voor',
+    sub: 'Malus "Red Sentinel" (kleiner) · rode sierappeltjes in herfst',
+    issues: 'GEEN spinselmot-historie (bevestigd door gebruiker). Hoeft niet mee in spinselmot-protocol. Bestuivings-bonus voor achter-appelbomen via bijen-transport. Kleine dieprode sierappeltjes (2-3cm) blijven tot januari/februari hangen = vogelvoer.',
+    tasks: {
+      3: [{
+        text: 'Lichte voorjaarssnoei indien nodig',
+        info: 'Sierappel Malus "Red Sentinel" heeft vrijwel geen snoei nodig. Alleen actie:\n• Dode of gebroken takken weg\n• Kruisende takken: één verwijderen\n• NIET de natuurlijke vorm verstoren — hij is mooi zoals hij groeit\n• Waterlot alleen bij overmatige groei\n\nSnoei in droge periode maart, bij vorstvrij weer.'
+      }],
+      4: [{
+        text: 'Bloesem genieten — universele bestuiver aan het werk',
+        info: 'Witroze bloesem, zeer aantrekkelijk voor bijen. Dit is jouw "extra bestuivings-motor":\n• Bloeit lang (3-4 weken)\n• Produceert veel stuifmeel\n• Bijen pendelen tussen voortuin en achtertuin = meenemen naar Boom 1, 2 en deels 3\n\nGewoon laten staan. Eventueel observeren welke bijen er vliegen.'
+      }],
+      5: [{
+        text: 'Visuele check op spinselmot (preventief, 1 min)',
+        info: 'Hoewel deze boom nooit spinselmot heeft gehad: 1 minuut checken geeft zekerheid.\n\nKijk naar:\n• Witte zijdeachtige webben in vertakkingen\n• Samenhangende bladeren met rupsen erin\n• Kale gevreten plekken\n\nGeen spinselmot zichtbaar? Klaar. Wel spinselmot (onwaarschijnlijk na 7+ jaar zonder): behandel mee met achter-bomen.'
+      }],
+      10: [{
+        text: 'Vruchtjes laten hangen = vogelvoer',
+        info: 'Kleine rode appeltjes rijpen in oktober. Belangrijk: NIET plukken of laten vallen.\n\n• Merel, lijster, spreeuw, koperwiek eten ze in de winter\n• Bijzonder waardevol als andere bessen op zijn (januari/februari)\n• Ook mooi decoratief: rode bolletjes tegen kale takken\n\nAls appeltjes op de grond vallen: laten liggen voor egels en muizen, of opruimen als je het te rommelig vindt.'
+      }]
+    },
+    innovatie: 'Deze sierappel is een dubbele winst: decoratief jaarrond + bestuivings-hulp voor je achter-appelbomen + vogelvoer in winter. Overweeg een tweede sierappel (zelfde cultivar of verwant) dichter bij Boom 3 te planten — zou het bestuivingsprobleem van de laatbloeier achterin oplossen.'
+  },
+  sierboompje: {
+    name: 'Sierboompje voor', icon: '🌳', zone: 'voor',
+    sub: 'Achterhaald — zie sierappel_voor en sierkers_voor',
+    issues: 'Deze kaart vervalt: linker boom is Malus Red Sentinel (zie sierappel_voor), rechter boom is sierkers (zie sierkers_voor). Genegeerd.',
+    tasks: {},
+    innovatie: ''
+  },
+  lavendel: {
+    name: 'Lavendelstrook', icon: '💜', zone: 'voor',
+    sub: 'Vóór de haag',
+    issues: 'Hekel aan natte voeten en zware snoei. 2× per jaar licht = 10+ jaar plant.',
+    tasks: {
+      4: ['Lichte voorjaarssnoei: 1/3 eraf, NOOIT in oud hout'],
+      7: ['Oogsten voor droogboeketten vlak voor alle bloemen open zijn'],
+      8: ['Na bloei tweede snoei, weer 1/3'],
+      9: ['Geen mest — lavendel houdt van arme grond']
+    },
+    innovatie: 'Wissel af met Perovskia (russische salie) of Phlomis voor langere bloei en meer bestuivers.'
+  },
+  appelbomen: {
+    name: 'Appelbomen (3×)', icon: '🍎', zone: 'achter',
+    sub: 'Fruitbomen',
+    issues: 'Jaarlijkse snoei voorkomt onregelmatige oogst. Let op spinselmot — zie apart protocol.',
+    tasks: {
+      1: [
+        {
+          text: 'Wintersnoei: dode/kruisende takken, open kroon, waterlot weg',
+          info: 'Basisprincipe: appelbomen vragen om een "open kroonvorm" — van buitenaf moet licht en lucht overal bij kunnen. Te dicht = schimmel, slechte rijping, schuilplek voor plagen.\n\nSnoei in deze volgorde:\n1. Alle dode takken (bruin, broos, niet buigzaam)\n2. Kruisende takken — waar twee takken langs elkaar schuren. Kies de sterkste, rest eruit.\n3. Naar binnen groeiende takken\n4. Waterlot: verticale steriele scheuten die recht omhoog schieten vanuit dikke takken — geven nooit fruit\n\nSnoei bij droog vriesvrij weer, januari is ideaal. Gereedschap schoonmaken met alcohol tussen bomen om ziektes te voorkomen.'
+        },
+        {
+          text: 'Mezenkasten ophangen (gaatje 28mm) — 2-3 stuks bij appelbomen',
+          info: 'Koolmezen eten massaal spinselmot-rupsen en ander tak-ongedierte. Eén broedsel = 6000-9000 rupsen weggevreten.\n\nIdeale plaatsing voor jouw layout: één kast tussen het duo (op 4 meter), één bij de achterste boom (binnen 10 meter). Hoogte 2-3 meter, opening naar oost/noordoost (niet pal zuid, te warm).\n\nOphangen uiterlijk half februari — mezen zoeken nu al hun broedplek.'
+        }
+      ],
+      2: [{
+        text: 'Eind feb: spuiten met minerale olie (Promanal) tegen overwinterende spinselmot-eitjes',
+        info: 'Zie het spinselmot-protocol voor volledige instructies. Korte versie: spuit bij knopzwelling maar vóór opening, 5°C+, droog, windstil. Hele boom drenken.\n\nDit is ÉÉN spuit die het verschil maakt tussen een volgende zomer met of zonder spinsels. Als je dit jaar 2026 al miste (bomen in bloei in april): noteer voor 2027!'
+      }],
+      3: [{
+        text: 'Vruchtboommest rondom druppellijn, feromoonvallen voor appelbloesemkever',
+        info: 'Druppellijn = denkbeeldige cirkel onder buitenste rand van de kroon. Daar zitten de actieve wortels, niet direct bij de stam. Strooi mest in een cirkel met straal gelijk aan kroonrand, niet verder naar binnen.\n\nVruchtboommest: zoek naar NPK 6-4-10 of soortgelijk. Kaliumrijk voor vruchtzetting en smaak. Dosering: 50-100g per m² kroonprojectie.\n\nFeromoonvallen: plastic trechter met synthetisch vrouwtjesferomoon. Mannetjes appelbloesemkever vliegen er op af, blijven in de val. Ophangen eind maart/begin april vóór knopopening. Één val per 2-3 bomen is genoeg.'
+      }],
+      4: [
+        {
+          text: 'Bloesem checken op vorstrisico',
+          info: 'Appelbloesem verdraagt -2°C kort, -4°C = volledige bloeiverlies (geen fruit). Check KNMI of Buienradar 3-5 dagen vooruit tijdens bloei (meestal half april-half mei).\n\nBij verwachte nachtvorst: vliesdoek (frostguard) over de bomen \'s avonds, \'s ochtends eraf. Voor kleine bomen werkt dit. Voor grote volwassen bomen is afdekken praktisch lastig — dan is het "dealen ermee".\n\nAlternatief bij voorspelde lichte vorst: sprinkelen met tuinslang door de nacht. Ijsvorming op bloesem = 0°C blijft = geen schade. Commerciële truc uit fruitteelt.'
+        },
+        {
+          text: 'Takken inspecteren op beginnende spinsels — direct wegknippen in plastic zak',
+          info: 'Zie spinselmot-protocol voor details. Dagelijkse check tijdens en na bloei. Vroeg wegknippen = kleine lokale haard = makkelijk te beheersen.'
+        }
+      ],
+      5: [
+        {
+          text: 'Juni-val afwachten, dunnen tot 1 vrucht per 10 cm tak',
+          info: 'Juni-val = natuurlijk fenomeen waarbij boom zelf overtollige vruchten laat vallen (meestal half juni). Wacht hier op — zelf vroeger dunnen = je gooit vruchten weg die de boom zelf zou laten vallen.\n\nNa juni-val: controle. Hangen nog trossen van 4-5 vruchten? Handmatig dunnen tot 1 (max 2) per tros. Behoud de grootste, mooiste vrucht per tros.\n\nWaarom dunnen: zonder dunnen krijg je veel kleine vruchten die niet goed rijpen, én de boom raakt uitgeput = volgend jaar weinig bloei ("beurtjaar"). Met dunnen: grote zoete appels + ieder jaar oogst.'
+        },
+        {
+          text: 'Bij rupsactiviteit: Bt (XenTari) \'s avonds spuiten',
+          info: 'Zie spinselmot-protocol. Kort: na de bloei, bijen weg, \'s avonds, druppelnat, alle drie bomen.'
+        }
+      ],
+      6: [
+        {
+          text: 'Zomersnoei: waterlot (verticale scheuten) weg',
+          info: 'In juni schieten veel appelbomen verticale scheuten omhoog vanuit dikke takken — "waterlot". Nutteloos: geven geen fruit, nemen energie weg, houden licht tegen.\n\nBreek of knip ze bij de basis af. Makkelijkst als ze nog jong en sappig zijn (juni-juli). Later worden ze houtig en moet je echt snoeien.\n\nBonus: zomersnoei rond midzomer remt de groei en stimuleert vruchthout voor volgend jaar. Wintersnoei doet juist het omgekeerde (stimuleert groei). Twee keer snoeien = evenwichtige boom.'
+        },
+        {
+          text: 'Evt. restant spinsels wegknippen',
+          info: 'In juni zijn grote spinsels al lastig te verwijderen en rupsen bijna volwassen — vreten niet veel meer. Knip alleen als het echt dominant in zicht is, chemisch ingrijpen heeft geen zin meer.'
+        }
+      ],
+      8: [{
+        text: 'Valfruit dagelijks opruimen (monilia-schimmel)',
+        info: 'Monilia is een schimmel die rotte appels aantast — herkenbaar aan bruine plekken met concentrische ringen van witte/grijze schimmelgroei. Valfruit is de bron.\n\nDagelijks valfruit oprapen en in de restafval (niet compost, schimmel overleeft). Ook rottende vruchten in de boom zelf plukken en weggooien.\n\nConsequent doen = 80% minder problemen volgend jaar. Monilia overwintert in gevallen fruit en oude rotte resten op takken ("mummies").'
+      }],
+      9: [{
+        text: 'Hoofdoogst — plukrijp = vrucht komt los bij lichte draai',
+        info: 'Plukrijpheid test: pak de appel, kantel 90° omhoog met een lichte draai. Laat los? Plukrijp. Moet je trekken of een zeurend geluid van de steel horen? Nog niet rijp.\n\nPlukken vs. eetrijp: appels zijn vaak plukrijp maar nog niet op hun beste smaak. Sommige rassen (Elstar, Jonagold) verbeteren 1-4 weken na pluk in koele opslag.\n\nPluk voorzichtig: blauwe plekken = sneller rot in opslag. Plaats in laag in kratten, niet op elkaar kieperen. Bewaren: donkere, koele ruimte (kelder, garage), 3-5°C optimaal.'
+      }],
+      10: [
+        {
+          text: 'LIJMBAND rond stam tegen wintervlinder',
+          info: 'Vrouwtjes wintervlinder kunnen NIET vliegen — ze kruipen van de grond tegen de stam omhoog om eitjes te leggen. De lijmband vangt ze allemaal.\n\nBand ophangen eind september/begin oktober (vóór de eerste nachtvorst meestal). Op 50-80 cm hoogte rondom stam, goed aansluitend. Plus een "overloopbeveiliging" eronder: een plastic band die verhindert dat vrouwtjes onder de lijmband doorkruipen.\n\nKost €5-10 per boom per jaar. Dé simpelste biologische plaagbestrijding in fruitteelt. In februari/maart kan hij weg (werkzaam seizoen voorbij).'
+        },
+        {
+          text: 'Boomschijven vrij, mulchen met compost',
+          info: 'Boomschijf = cirkel van 50-100 cm rond de stam, vrij van gras/onkruid. Waarom: gras concurreert om water en voedsel in de eerste 5 jaar na aanplant. Bij oude bomen minder kritiek, maar nog steeds beter.\n\nLaag van 5-8 cm compost of bladcompost verspreiden in de boomschijf, NIET tegen de stam (rotting). Dit voedt de bodem, houdt vocht vast, onderdrukt onkruid, en lokt wormen = natuurlijke grondbewerking.'
+        }
+      ]
+    },
+    innovatie: 'Spinselmot-aanpak in lagen (winter-olie + april-inspectie + Bt bij uitbraak + mezen) vervangt handmatig plukken in juni. Zie apart protocol "Spinselmot bestrijding".'
+  },
+  spinselmot: {
+    name: 'Spinselmot protocol', icon: '🕸️', zone: 'achter',
+    sub: 'Plaagbestrijding appelbomen',
+    issues: 'Klassiek probleem op appel. Witte webben vol grijs-bruine rupsen in mei/juni. Handmatig plukken is te laat — cyclus breek je in februari (olie) en mei (Bt). Zie "Appelboom-layout" voor plattegrond en tactiek.',
+    tasks: {
+      1: [
+        {
+          text: '2× mezenkast ophangen (gaatje 28mm): één tussen het duo, één bij achterste boom',
+          info: 'Gaatje moet 28mm zijn — dat is voor koolmees. Groter (32mm) = mussen, die eten geen rupsen. Kleiner (25mm) = pimpelmees, ook goed maar koolmezen zijn effectiever voor appelrupsen.\n\nHang op 2-3 meter hoogte, opening NIET pal op het zuiden (te warm), bij voorkeur oost/noordoost. Katten en eekhoorns weghouden = gladde stam of kast op paal.\n\nOphangen moet uiterlijk half februari — mezen zoeken nu hun broedplek voor het aankomende seizoen.'
+        },
+        {
+          text: 'Minerale olie + Bt alvast bestellen',
+          info: 'Minerale olie (merk: Promanal AF, Natria, Polsenol): werkt door eitjes te verstikken. Zoek naar "winter-olie" of "paraffine-olie voor fruit".\n\nBt = Bacillus thuringiensis subsp. kurstaki. Merken: XenTari, Delfin, Thuricide. Let op: geen lange houdbaarheid, koel bewaren, binnen 1-2 jaar gebruiken.\n\nBeide zijn verkrijgbaar bij goed tuincentrum of online. Niet bij Intratuin/Praxis altijd, wel bij gespecialiseerde fruitteelt-shops.'
+        }
+      ],
+      2: [{
+        text: 'DÉ GAME-CHANGER: minerale olie (Promanal) spuiten eind februari, vóór knopopening',
+        info: 'HET KRITIEKE VENSTER: wanneer de knoppen beginnen te zwellen maar nog NIET open zijn. Meestal half/eind februari, soms begin maart. Te vroeg = geen effect, te laat = verbrandt de jonge blaadjes.\n\nCondities: droog weer, minimaal 5°C, windstil, geen regen voor 24 uur verwacht.\n\nTechniek: hele boom "drenken" tot het druppelt — elke tak, elke schors. Gebruik rugsproeier of drukspuit. Werk systematisch: onderkant takken niet vergeten.\n\nBeschermkleding: spatbril + handschoenen. Olie is niet giftig, wel huidirriterend. Alle drie bomen dezelfde middag doen.'
+      }],
+      3: [{
+        text: 'Takken inspecteren op "schildjes" (platte bruine plekjes) — dit zijn eitjes',
+        info: 'Spinselmot-eitjes overwinteren in een platte schildvorm op jonge takken, meestal 1-3 cm lang, lichtbruin tot donker bruin. Lijken op een rare korst of bruin plakkertje op de schors.\n\nMet loep (×10) zie je de structuur: een schild met honderden eitjes eronder. Één schild = potentieel 200-300 rupsen.\n\nVind je veel schildjes? Die specifieke takken kun je nu nog wegknippen en verbranden/restafval — directe populatie-reductie. Niet composteren.'
+      }],
+      4: [
+        {
+          text: 'BLOEI: GEEN spuiten (bijen!). Dagelijks inspecteren, eerst het duo — dan achterste boom',
+          info: 'Tijdens bloei zijn bijen actief op de boom. Zelfs biologische middelen (Bt) mogen niet — de spuitnevel verstoort de bijen, en de bomen worden vies terwijl je juist bestuiving wilt.\n\nInspectievolgorde heeft te maken met windrichting en jouw tuinlayout: plagen verspreiden zich meestal van de bewoonde zone naar de luwe hoeken. Het duo is dichterbij huis = meer wind, eerste signaal.\n\nLet op: piepkleine spinseldraadjes (<1cm), ineengevouwen jonge blaadjes, groepjes micro-rupsen (1-2 mm) aan onderkant blad.'
+        },
+        {
+          text: 'Lokale haarden: takje eraf, plastic zak, restafval (NIET compost)',
+          info: 'Knippen waar ze zitten: hele takje eraf, direct in een plastic zak, zak dichtknopen, in restafvalcontainer (niet groen/GFT). Rupsen leven nog 1-2 dagen en kunnen uit compost kruipen.\n\nNa knippen: gereedschap schoonmaken met alcohol — anders verspreid je eventuele eitjes naar de volgende boom.\n\nBij kleine lokale haarden is dit éffectief. Bij grote uitbraak: doorgaan met knippen is dweilen met kraan open — wacht op bloeieinde en spuit Bt.'
+        }
+      ],
+      5: [
+        {
+          text: 'NA DE BLOEI: Bt (XenTari/Delfin) \'s avonds spuiten, ALLE DRIE bomen tegelijk',
+          info: 'Timing: zodra 90% van de bloemblaadjes is gevallen. Bijen zijn dan weg. Meestal eerste tot tweede week van mei.\n\nWaarom \'s avonds: UV-licht (zonlicht) breekt Bt af binnen enkele uren. Spuiten bij zonsondergang = hele nacht werking. Rupsen eten ook meer \'s nachts.\n\nDosering: meestal 1-1.5 gram per liter water (check exacte merk). Druppelnat spuiten = elke blad aan onder- én bovenkant raken. Rupsen eten het blad = nemen Bt op = darmwand lost op = sterven binnen 2-5 dagen.\n\nSpuiten kan ALLEEN bij: droog weer, geen regen voorspeld 6 uur, temp boven 12°C, weinig wind.'
+        },
+        {
+          text: 'Halve liter oplossing is genoeg voor drie bomen',
+          info: 'Bij middelgrote appelbomen (4-5m) is per boom 150-200 ml druppelnat spuitoplossing nodig. Druk-rugsproeier van 1 liter is meer dan genoeg voor al je drie bomen samen.\n\nMaak niet teveel aan — Bt-oplossing verliest werkzaamheid binnen 24 uur na aanmaken. Rest niet bewaren, gewoon weggooien op stenen (niet in afvoer, niet op gazon vlak bij vijver).'
+        },
+        {
+          text: 'Evt. tweede behandeling 7-10 dagen later',
+          info: 'Waarom: eitjes kunnen verspreid over 2-3 weken uitkomen. De eerste spuit raakt de vroege rupsen, de tweede vangt de late.\n\nHoe weet je of nodig? Check 1 week na eerste spuit: nog levende rupsen zichtbaar, nieuwe bladschade? → tweede spuit.\n\nEen derde spuit is bijna nooit nodig bij correcte timing. Als het dan nog doorgaat, is er iets fout met middel/dosering/timing — evalueer voor volgend jaar.'
+        }
+      ],
+      6: ['Laatste restanten wegknippen. Te laat voor chemische aanpak.'],
+      7: [{
+        text: 'Schermbloemigen in bloei: dille, wilde peen, fluitenkruid binnen 5m van achterste boom',
+        info: 'Sluipwespen zijn micro-wespen (1-3mm) die eitjes leggen ín rupsen. De rups leeft nog even door, maar wordt van binnenuit opgegeten. Wreed, gratis, effectief.\n\nDe volwassen wespen zelf eten geen rupsen — ze eten nectar van schermbloemigen (platte bloemschermpjes). Zonder die nectarplanten geen volwassen wespen = geen eitjes in rupsen.\n\nGoede keuzes: dille, koriander (mag laten bloeien), wilde peen, venkel, fluitenkruid, zevenblad (ja écht). Laat een strookje "wild" tussen gazon en achterste boom.'
+      }],
+      11: ['Evaluatie: welke boom had meer last? Noteer voor volgend jaar.']
+    },
+    innovatie: 'De achterste boom profiteert extra van de bosrand — plaats daar je "wilde hoek" met schermbloemigen. Sluipwespen komen vanuit het bos, parasiteren rupsen = dubbele natuurlijke bestrijding.'
+  },
+  appelboom_layout: {
+    name: 'Appelboom-layout', icon: '🗺️', zone: 'achter',
+    sub: 'Tactische plattegrond — 3 bomen, 3 bloeigroepen',
+    issues: 'Drie bomen met GESPREIDE BLOEI: Rechts (groep 2-3), Links (groep 3-4), Achterin (groep 5-6). Eerste twee bestuiven elkaar. Boom 3 is laatbloeier = mogelijk geen overlap = mogelijk bestuivingsprobleem.',
+    tasks: {
+      1: ['Mezenkast 1: tussen het duo (op ~4m afstand)', 'Mezenkast 2: binnen 10m van achterste boom'],
+      3: ['Wilde hoek plannen bij achterste boom: brandnetel + schermbloemigen'],
+      4: [
+        'Inspectievolgorde: eerst duo (Rechts+Links), dan Achterin. Uitbraak spinselmot in een = alle drie behandelen',
+        {
+          text: 'BLOEI-OVERLAP CHECKEN (cruciaal voor bestuiving)',
+          info: 'Deze week is het kritieke moment. Check dagelijks:\n\nBOOM RECHTS (groep 2-3): bloeit als eerste\nBOOM LINKS (groep 3-4): bloeit 1-2 weken later\nBOOM ACHTERIN (groep 5-6): bloeit 2-3 weken later dan Rechts\n\nKRITIEKE OBSERVATIES:\n• Zijn er dagen waarop alle drie open bloemen hebben?\n• Zie je bijen op alle drie bomen?\n• Op Boom Achterin: vliegen er bijen? Of is die solitair?\n\nALS BLOEIEN NIET OVERLAPPEN:\n• Rechts + Links bestuiven elkaar OK\n• Achterin is alleen — hangt af van externe bestuivers:\n  - Wilde appels in bos achter tuin?\n  - Sierappels bij buren?\n  - Bijen die tussen tuinen pendelen?\n\nNOTEER dagelijks bloei-fase per boom (knop/half/vol/uitgebloeid). Dit is DATA voor volgend jaar bestuivings-planning.'
+        }
+      ],
+      5: ['Bij Bt-spuiten altijd alle drie — rupsen kunnen via draadjes overwaaien binnen 8m, niet over 20m'],
+      6: [{
+        text: 'Vruchtzetting Boom 3 observeren (juni-val)',
+        info: 'Tussen bloei en eerste vrucht hebben appels een natuurlijke "juni-val" — onbestoven of slecht bestoven vruchten vallen af.\n\nPER BOOM tellen in juni:\n• Rechts: schatting aantal vruchten op boom\n• Links: schatting aantal vruchten op boom\n• Achterin: schatting aantal vruchten op boom\n\nVUISTREGELS:\n• 1 vrucht per tros = bestuiving was OK\n• 2-3 vruchten per tros = zeer goede bestuiving\n• Veel kale trossen (bloem wel, geen vrucht) = bestuivingsprobleem\n\nVooral BOOM ACHTERIN: als hier verhoudingsgewijs veel minder vrucht zit dan op de andere twee = bevestiging bestuivingsprobleem.'
+      }],
+      7: ['Wilde hoek in bloei houden — sluipwespen trekken'],
+      9: ['Oogst per boom noteren — zo weet je welke boom achterblijft en of bestuiving goed gaat']
+    },
+    innovatie: 'Als blijkt dat Boom Achterin dit jaar weinig vrucht geeft: sierappel binnen 20m planten is dé oplossing. Malus "Evereste" of "Golden Hornet" (€40-80) zijn universele bestuivers met lange bloeitijd die overlap geven met ALLE bestuivingsgroepen.'
+  },
+  appelras_onderzoek: {
+    name: 'Appelras-onderzoek', icon: '🔬', zone: 'algemeen',
+    sub: 'Identificatie van je 3 bomen',
+    issues: 'Drie bomen met GESPREIDE BLOEI-TIMING — geen klassieke triade maar rassen uit verschillende bestuivingsgroepen. Mogelijk bestuivingsprobleem bij Boom 3 (laatbloeier). Definitieve identificatie in september/oktober via vruchten.',
+    tasks: {
+      4: [{
+        text: 'BOOM RECHTS terras (vroegbloeier, groep 2-3)',
+        info: 'KENMERKEN (uit jouw foto 1):\n• Volle rijke bloei (het meest vooruit)\n• Middelgrote boom (~4-5m), rechte stam\n• Compacte vrij symmetrische kroon\n• Vrijstaand op gazon (niet getraind)\n• Rondere wit-roze bloemblaadjes\n• Blad langwerpig spits, scherp gezaagd, donker matgroen\n• Lange slanke bladsteel\n→ DIPLOÏD profiel\n\nBESTUIVINGSGROEP 2-3 (vroegbloeier)\n\nTOP-KANDIDATEN:\n\n1. NOTARISAPPEL (Lunteren, 1890) — MEEST WAARSCHIJNLIJK\n• Klein stevig donkergroen puntig blad\n• Rozerode knoppen → witroze bloem\n• Groep 3 vroegbloeier\n• Vrucht groengeel met oranjerode streping\n• Klassieke compensatiebestuiver voor Boskoop\n\n2. JAMES GRIEVE (Schotland, 1890)\n• Ook groep 3\n• Vrij vroege bloei, goede bestuiver\n• Vrucht geelgroen met rode blos\n\n3. STERAPPEL (Zuid-Limburg, ~1830)\n• Eerder groep 4-5, dus waarschijnlijk niet\n\nDEFINITIEF UITSLUITSEL: vruchtfoto in september/oktober.'
+      }],
+      5: [{
+        text: 'BOOM LINKS terras (middenbloeier, groep 3-4)',
+        info: 'KENMERKEN (uit jouw foto 2):\n• Vergelijkbaar formaat (~4-5m)\n• IJLER/MEER OPEN vertakkingspatroon\n• MINDER bloesem, nog veel knoppen\n• Bloei duidelijk LATER dan rechter boom\n• Dichter bij muur/schuur\n• Licht roze knoppen, wit opengaand\n• Blad: uit eerdere foto\'s: rond/eivormig, fijn golvend gezaagd\n• Licht glanzend, fijne nerven\n• DIKKE BEHAARDE bladsteel\n\n→ KLASSIEK TRIPLOÏD-PROFIEL\n\nBESTUIVINGSGROEP 3-4\n\nMEEST WAARSCHIJNLIJK: SCHONE VAN BOSKOOP\n• Groep 3-4, triploïd\n• Karakteristieke behaarde bladsteel\n• Klassieke moesappel, karakteristieke berosting\n• Nederlandse topper, vaak aangeplant\n\nALTERNATIEVEN:\n• Jacques Lebel (triploïd, iets later, roze geurige bloesem)\n• Bramley\'s Seedling (ook triploïd, minder vaak in NL)\n\nLET OP: triploïd = steriel stuifmeel = bestuift NIETS. Heeft Boom Rechts (diploïd) nodig voor bestuiving.\n\nBELANGRIJKE CORRECTIE: is GEEN leiboom (eerder verondersteld). Vrijstaande boom. De naam "tegen muur" slaat op de schaduwmuur-klimplanten, niet op deze appelboom.'
+      }],
+      6: [{
+        text: 'BOOM ACHTERIN bij bos (LAATBLOEIER, groep 5-6)',
+        info: 'KENMERKEN (uit jouw foto 3):\n• GROTE boom (~6-8m), duidelijk ouder en forser dan de andere twee\n• IJLE OPEN kroon, minder dicht vertakt\n• Bloei NOG NIET begonnen — overwegend kale takken, net uitlopende blaadjes\n• Dichte trossen DIEP ROZE knoppen (4-5 per tros)\n• Blad: ZWAAR BEHAARD, dof-grijsgroen, brede ronde/eivormige vorm\n• Jonge blaadjes nog gekrompen\n• Staat in halfschaduw (bos vlakbij)\n\n→ LAATBLOEIER: GROEP 5-6\n\nDIT VERANDERT DE ANALYSE GRONDIG:\nBoom Rechts (groep 3) + Boom Links (groep 3-4) kunnen elkaar bestuiven. Maar Boom 3 bloeit 2-3 weken later = GEEN overlap met de andere twee.\n\nTOP-KANDIDATEN:\n\n1. BRABANTSE BELLEFLEUR — MEEST WAARSCHIJNLIJK\n• Zuid-Nederlandse klassieker\n• Groep 5-6 laatbloeier\n• Karakteristieke dichte trossen met diep roze knoppen\n• Sterk behaarde bladonderkant\n• Diploïd, beurtjaar-gevoelig (wisselende oogst — past bij jouw observatie!)\n• UITSTEKEND voor appelmoes en appeltaart\n\n2. COURT PENDU PLAT (middeleeuws, "the wise apple")\n• Groep 6-7 extreem late bloeier\n• Ontwijkt late vorst door late bloei\n• Zware beharing, dichte bloeitrossen\n• Populair in oude NL-tuinen\n\n3. ZOETE ERMGAARD of DIJKMANSZOET\n• Groep 5-6 laatbloeiers\n• Zoete stoofappels (blijven heel bij koken)\n• Minder geschikt voor moes, wel voor stoven\n\nPROBLEEM: is er nabije late-bloeier-bestuiver?\n• Wilde appels in het bos?\n• Sierappels bij buren?\n• Anders: verklaart waarom de oogst wisselt\n\nVOLGENDE JAAR: monitor of bijen deze boom bezoeken tijdens late bloei.'
+      }],
+      7: [{
+        text: 'BLOEI-TIMING observeren: tabel bijhouden',
+        info: 'HET BELANGRIJKSTE ELEMENT deze maand: documenteer per boom:\n\n• Datum eerste roze knop zichtbaar\n• Datum eerste bloem open\n• Datum volle bloei (80%+)\n• Datum laatste bloei\n\nVoor Boom 3 specifiek:\n• Zie je bijen op deze boom tijdens bloei?\n• Vallen veel knoppen af (onbestoven)?\n• Zie je in juni veel juni-val (normaal) of extreem veel (bestuivingsprobleem)?\n\nMOGELIJKE BESTUIVERS OM TE SPOTTEN (binnen 50m):\n• Wilde appels/peer in bos achter tuin\n• Sierappels bij buren\n• Andere fruitbomen in buurt\n\nKunnen buren mogelijk een laatbloeier planten (sierappel "Evereste" of "Golden Hornet" zijn universele bestuivers)?'
+      }],
+      8: [{
+        text: 'AUGUSTUS: eerste vruchten fotograferen + labelen',
+        info: 'Start documentatie — appels rijpen nog 6-10 weken maar vorm/kleur begint zich te tonen.\n\nLABELEN EERST (dit doe je NU):\n• Jute touw + plastic label aan elke boom\n• "Rechts terras" / "Links terras" / "Achterin bos"\n• Voorkomt verwarring bij volgende onderhoudsbeurten\n\nPER BOOM FOTOGRAFEREN:\n• 3-5 vruchten hangend aan tak\n• 1 zijaanzicht (toont vorm + steel)\n• 1 onderkant (toont kelk/oog)\n• 1 gehele boom als context\n\nNOTEER per boom:\n• Datum\n• Vrucht-kleur (grondkleur + blos)\n• Geschatte grootte (tennisbal-vergelijking of meten)\n• Aantal vruchten per tros (1, 2, 3-4?)\n• Hoeveelheid fruit (veel/weinig in vergelijking vorig jaar)\n\nBOOM 3 EXTRA: tel globaal het aantal vruchten. Als dit jaar weinig → bestuivingsprobleem. Als veel → dan werkt het wel.'
+      }],
+      9: [{
+        text: 'SEPTEMBER: plukrijpheid testen + oogst-monitor',
+        info: 'Verwachte pluk-volgorde op basis van rassen-hypothese:\n\n1. BOOM RECHTS (vroegbloeier = vroege oogst): half-eind september\n2. BOOM LINKS (middenbloeier): eind september / begin oktober\n3. BOOM ACHTERIN (laatbloeier): begin/half oktober\n\nPLUKRIJPHEIDSTESTEN:\n\n1. PITTENTEST (beste)\n• Snij een appel doormidden\n• Lichtbruin → donkerbruin pitjes = plukrijp\n• Witte pitjes = te vroeg\n\n2. STEELTEST\n• Pak appel, kantel 90° omhoog met lichte draai\n• Komt los? → plukrijp\n• Moet je trekken? → nog niet\n\n3. GRONDKLEUR: grasgroen → geelgroen = rijpend\n\nPluk per boom apart, label de kratten. 3-5 "documentatie-appels" per boom apart houden voor NPV.\n\nOOGSTTELLING per boom — vergelijk met verwachting op basis van bloei-intensiteit. Dit is data voor volgend jaar.'
+      }],
+      10: [{
+        text: 'OKTOBER: NPV-documentatie + alle drie bomen vergelijken',
+        info: 'HÉT MOMENT voor definitieve identificatie. Per boom 5-10 representatieve vruchten + 2 takjes met bladeren.\n\nFOTOGRAFEER PER VRUCHT (met liniaal, witte achtergrond):\n1. Bovenzijde (vorm)\n2. Onderzijde (kelk/oog)\n3. Zijaanzicht (steel + steelholte)\n4. OVERLANGSE DOORSNEDE (klokhuis-vorm)\n5. DWARSE DOORSNEDE (pit-patroon)\n\nDOCUMENTEER:\n• Grondkleur vs. dekkleur\n• Berosting (Boskoop = veel)\n• Lenticellen (stippeltjes op schil)\n• Kelkvorm\n• Steellengte/-dikte\n• Vruchtvlees-kleur (wit, crème, geel, roze onder schil)\n• Textuur (stevig, grof, fijnkorrelig)\n• Smaak (zoet/zuur, aroma zoals reinette/anijs/banaan)\n• Bewaar-gedrag tot januari (Boskoop blijft hard tot maart)\n\nBOOM 3 EXTRA CHECK:\nAls blijkt dat oogst dit jaar laag is = bestuivingsbevestiging. Oplossingsrichting: sierappel planten of andere laatbloeier in buurt.'
+      }],
+      11: [{
+        text: 'Overwegen: bestuivings-oplossing voor Boom 3',
+        info: 'Als Boom 3 dit jaar duidelijk slechte oogst had door gebrek aan bestuiver:\n\nOPLOSSINGEN:\n\n1. SIERAPPEL PLANTEN (beste oplossing)\n• Malus "Evereste", "Golden Hornet" of "Red Sentinel"\n• Zijn universele bestuivers (veel bloemen, lange bloei)\n• Bloeien gespreid over 3-4 weken = overlap met élke groep\n• Mooi ornamenteel + vogelvoer in winter\n• Plant binnen 20m van Boom 3\n\n2. TWEEDE LAATBLOEIER APPEL PLANTEN\n• Brabantse Bellefleur als bestuiver voor Bellefleur\n• Of Schone van Boskoop (als Boom 3 GEEN Boskoop is)\n• Vraagt wel ruimte\n\n3. ENTEN: een tak van een bestuiver enten op Boom 3\n• Vakwerk maar levenslang effect\n• Hovenier of NPV-cursus\n\n4. NIKS DOEN — accepteer wisselende oogst\n• Als je tevreden bent met huidige opbrengst\n• Bellefleur beurtjaren zijn natuurlijk fenomeen\n\nKOSTEN-INDICATIE:\n• Sierappel jonge boom: €40-80\n• Volwassen sierappel: €150-300\n• Enten: gratis als je het zelf leert, €100+ door hovenier'
+      }]
+    },
+    innovatie: 'Je tuin heeft drie bomen uit VERSCHILLENDE bestuivingsgroepen — dat is ongebruikelijk en betekent risicospreiding: als late vorst één groep treft, overleven de andere. Boom 3 (laatbloeier) is typisch een "vorst-vermijder" — oud cultuurgoed. Het potentiële bestuivingsprobleem is oplosbaar met één sierappel binnen 20m. Na NPV-determinatie weet je zeker welke rassen, dan kun je gericht de bestuivingsbalans optimaliseren.'
+  },
+  npv_determinatie: {
+    name: 'Pomologische Vereniging', icon: '📋', zone: 'algemeen',
+    sub: 'Definitieve ras-identificatie in herfst',
+    issues: 'De Noordelijke Pomologische Vereniging (NPV) organiseert gratis determinatiedagen in oktober-november. Je neemt 5-10 vruchten + takjes mee per boom, zij vertellen exact welk ras het is.',
+    tasks: {
+      8: [{
+        text: 'Lidmaatschap NPV overwegen (€35/jaar, ANBI = aftrekbaar)',
+        info: 'NOORDELIJKE POMOLOGISCHE VERENIGING (NPV)\n• Hoofdlocatie: Stichting Fruithof Frederiksoord\n  Majoor van Swietenlaan 1a/1b, 8382 CE Frederiksoord\n• Collectie: 1000+ oude fruitrassen (levend archief)\n• Website: npv-pomospost.nl\n• Email: info@fruithof-frederiksoord.nl\n• Lidmaatschap: ~€35/jaar\n• ANBI-status = giften/lidmaatschap aftrekbaar\n• Inclusief: kwartaaltijdschrift Pomopost + toegang determinatiedagen\n\nDesondanks "Noordelijk" in naam: LANDELIJK actief.\n\nREGIONALE ALTERNATIEVEN:\n• Pomologische Vereniging Noord-Holland (hoogstamfruitnh.com)\n• Pomologisch Genootschap Limburg\n• Stichting Fruit yn Fryslân\n• Nationale Boomgaardenstichting (België) — vliermaal, 4000+ rassen\n\nGRATIS ALTERNATIEF:\n• Facebook-groep "Liefhebbers van fruit en fruitteelt" — foto-determinatie door liefhebbers'
+      }],
+      9: [{
+        text: 'Determinatiedag inplannen (september/oktober)',
+        info: 'NPV organiseert jaarlijks determinatiedagen in oktober-november op verschillende locaties.\n\nWANNEER CHECKEN: begin september op npv-pomospost.nl → "Activiteiten"/"Agenda"\n\nWAT MEENEMEN per boom:\n• 5-10 representatieve vruchten (pas geoogst, niet gekneusd)\n• 2 takjes met bladeren (incl. bladsteel)\n• Jouw foto\'s van de boom, bloei (als je die hebt), blad\n• Oogstdatum + locatie (muur/vrijstaand)\n• Smaak-notities\n• Eventuele historie (wie heeft geplant? Jaar? Kwekerij?)\n\nFORMAT: meestal neem je vruchten mee in aparte kratjes/dozen per boom. Pomologen bekijken, hanteren, snijden door, proeven. Definitief antwoord meestal binnen 15-30 minuten per boom.\n\nKOSTEN: gratis voor leden, vaak ook gratis voor niet-leden (of kleine vergoeding).\n\nAls je niet naar een dag kunt: ze nemen soms vruchten op via de post (check met hun).'
+      }],
+      10: [{
+        text: 'Na determinatie: bomen registreren bij Landschapsbeheer',
+        info: 'Als blijkt dat je zeldzame of erfgoedrassen hebt, is het waardevol je bomen te registreren.\n\nPROVINCIALE LANDSCHAPSBEHEER:\n• Elke provincie heeft een hoogstamfruit-programma\n• Koepel: landschappen.nl\n• Gelderland: handboek hoogstamfruit + snoeicursussen\n• Zeeland: hoogstam-abonnement met tweejaarlijkse inspectie\n\nDONEER ENTHOUT (januari-februari):\n• 1-jaars scheuten, potloods-dik\n• 20-30 cm lang, 3-6 ogen\n• Koel bewaren in vochtige plastic zak\n• Opsturen naar NPV of NBS (België)\n• Zo gaat genetisch materiaal in de nationale collectie\n\nZELFS als je rassen "gewoon" zijn (Boskoop, Notaris): de combinatie + de historische context is waardevol.'
+      }]
+    },
+    innovatie: 'Zelfs als je "gewone" Boskoop + Notaris hebt, vertegenwoordigt je tuin verdwijnend agrarisch erfgoed. Sinds de jaren 70 zijn de meeste Nederlandse huistuin-hoogstammen gerooid voor supermarkt-appels. De klassieke drie-appel-triade is zeldzaam geworden. Mogelijk zeldzame rassen: Reinette van Zorgvliet, Drentse Bellefleur, Doeke Martens (Fries), Lemoenappel, Lunterse Pippeling, Tante Dora, Eijsdener Klumpke, Dubbele Zoete Aagt — als je Boom 3 zo\'n ras is, is dat wetenschappelijk én cultureel waardevol.'
+  },
+  konijnen: {
+    name: 'Koko & Dropje', icon: '🐰', zone: 'konijnen',
+    sub: 'Hok + ren bij buurschuur (halverwege tuin, links)',
+    issues: 'Konijnen in hok/ren = géén loop in de tuin. Giftigheid-waarschuwingen gelden alleen voor planten bij de ren. Bt-middel (spinselmot) veilig voor konijnen. Vers maaisel NOOIT in ren (gisting = opgeblazen maag = levensgevaarlijk).',
+    tasks: {
+      3: [{
+        text: 'Voorjaarscheck hok: dak lekkage, gaas intact, isolatie',
+        info: 'Na winter controleren:\n• Dak: lekkages? Mos? Plakken aanbrengen of repareren\n• Gaas: roest, gaten, losse bevestiging\n• Isolatie: vochtige/beschimmelde plekken? Vervangen\n• Hout: rot, onderkant palen? Behandelen\n\nBij deze gelegenheid: binnenkant hok grondig schoonmaken (keramiekreiniger of azijn-water).'
+      }],
+      4: [{
+        text: 'Planten rond ren inspecteren op giftigheid',
+        info: 'Konijnen kunnen door gaas aan planten knabbelen. Giftig voor konijnen (niet in hun bereik zetten):\n• Taxus (ZEER giftig, zelfs klein beetje)\n• Buxus, rhododendron, azalea, hortensia, lelietje-van-dalen\n• Alle voorjaarsbollen (tulp, narcis, hyacint, krokus)\n• Klimop (Hedera)\n• Eikenblad (bladval bij boom 3!)\n\nVeilige planten rond ren:\n• Gras, klaver, paardenbloem (echt lekker)\n• Rozemarijn, tijm (niet hun favoriet maar veilig)\n• Hosta (je hebt deze al, veilig)\n• Daglelies (veilig)\n\nBij twijfel: hele plant op 50cm van gaas houden.'
+      }],
+      5: [{
+        text: 'Bt-spuiten appelbomen: konijnen tijdelijk binnen/afdekken',
+        info: 'Bt-product (XenTari/Delfin) is in principe veilig voor zoogdieren, werkt alleen op rupsen. MAAR:\n• Druppels op voer = niet ideaal\n• Spuit-aerosol kan irriteren\n\nTIJDENS SPUITEN:\n• Hok afdekken met oud laken / vuilniszak\n• Of konijnen kort binnen zetten (30-60 min)\n• Voer en hooi tijdelijk elders\n\nNA DROGING (1-2 uur):\n• Alles terug\n• Gras eromheen 1 dag niet voederen\n\nPreventief: ruim de bomen gaan spuiten, wind van de ren af.'
+      }],
+      6: [{
+        text: 'Zomerbeheer: schaduw, water, hitte',
+        info: 'Konijnen hebben hitte-stress boven 25°C. Bij NO-ligging krijgt hun hok ochtendzon, middag-schaduw. Check:\n• Schaduwdek aanwezig (dekend deel hok)\n• Waterbak nooit leeg, ververs dagelijks bij hitte\n• Eventueel bevroren waterflessen in hok (ze leggen zich ernaast)\n• Bij extreme hitte (>30°C) hok evt. nat sproeien (buiten, niet erin)\n\nOPPASSEN: vliegen leggen eitjes in vochtige vacht (vliegenmade-ziekte, Fly Strike). Controleer dagelijks onder staart en rond achterwerk bij warm weer.'
+      }],
+      7: [{
+        text: 'NOOIT vers gemaaid gras in ren — gisting = levensgevaar',
+        info: 'DÉ KLASSIEKE KONIJNEN-FOUT: vers maaisel na gazonmaaien in de ren strooien.\n\nProbleem:\n• Vers nat gras begint direct te gisten\n• Konijnenmaag kan niet goed gassen afvoeren\n• Maag zet uit = bloat = vaak fataal binnen uren\n\nWEL prima:\n• Hooi (gedroogd, gefermenteerd)\n• Verse grassprieten direct van plant geplukt in kleine hoeveelheden\n• Kruiden vers geplukt (tijm, peterselie, korianderblad)\n\nMaaisel gaat naar compost of GFT, nooit naar de ren.'
+      }],
+      8: [{
+        text: 'Appeltjes traktatie: pitten ERUIT (cyanide-risico)',
+        info: 'In september/oktober kunnen jouw appels een lekkere traktatie zijn voor Koko en Dropje. MAAR:\n• APPELPITTEN bevatten cyanide (amygdaline) — giftig voor konijnen\n• Zelfs 1-2 pitjes per dag kan ophopen\n\nVeilige manier:\n• Appel halveren of in schijfjes\n• Klokhuis + pitten ERUIT\n• Schil + vruchtvlees: prima, zelfs gezond\n• Kleine hoeveelheid per dag (appel = suiker)\n\nAppelblad en kleine takjes zijn OK (net als sommige wilde konijnen dat doen), maar matig.'
+      }],
+      10: [{
+        text: 'Bladval rond ren: eikenblad en appelblad wegschrapen',
+        info: 'In oktober/november valt veel blad:\n• EIKENBLAD (indien aanwezig): bevat LOOIZUUR = slecht voor konijnen\n• APPELBLAD: in kleine hoeveelheden OK, veel = matig\n• BOSBLAD: meestal neutraal\n\nAanpak:\n• Wekelijks blad rond ren wegharken\n• Niet in ren laten vallen\n• Blad naar compost of sedumdak-onderhoud-vermijdhoek\n\nLet op: bladval bij jou is vooral vanuit BOOM 3 achterin (+ bos ver weg) — hoeveel bereikt de konijnen-plek echt?'
+      }],
+      11: [{
+        text: 'Winter-isolatie: stro, afdekking, tochtbescherming',
+        info: 'Konijnen verdragen koude beter dan hitte, maar wel goede voorbereiding:\n\n• EXTRA STRO in slaapgedeelte (isolatie)\n• WIND-afdekking aan tochtkant (jute doek, oude dekens)\n• Buiten-ren: zeil over deel voor droog slaap-gebied\n• Water-check: wordt het elke dag vloeibaar? Anders overwegen warmwater-fles onder bak\n\nNIET doen:\n• Volledig inpakken (geen ventilatie = condens = ziekte)\n• Binnen zetten tenzij <-15°C meerdere dagen (acclimatisatie verstoren is erger dan koude)\n\nDubbele check waterbak: elke 8-12 uur kijken bij vorst.'
+      }]
+    },
+    innovatie: 'Plant CONIJNEN-VRIENDELIJK rond ren: paardenbloem (laat staan! gezonde snack), klaver, weegbree. Je bespaart 30% op hooi-kosten én konijnen zijn gezonder. Als je nog een hoekje vrij hebt: een mini "konijnentuintje" met veilige kruiden (peterselie, basilicum, dille, koriander, weegbree) geeft verse snacks door de zomer.'
+  },
+  bodembedekkers: {
+    name: 'Bodembedekker-project', icon: '🌱', zone: 'achter',
+    sub: 'Kale plek bij konijnen/kruidenborder — 5-10 m²',
+    issues: 'Jaarlijks veel tijd kwijt aan onkruid tussen struiken bij konijnen. Oplossing: dichte mat bodembedekkers planten. Na 2 jaar GEEN onkruid meer. Eenmalige investering ~€250, daarna jarenlang rust.',
+    tasks: {
+      4: [{
+        text: 'Oppervlakte opmeten + onkruid laatste keer weg',
+        info: 'STAP 1 van het project:\n\n• Meet de kale plek op (lengte × breedte in meters)\n• Schrijf de m² op\n• Haal laatste onkruid weg\n• Kijk of er nog struikwortels aan de oppervlakte liggen\n\nJouw schatting: 5-10 m² = ongeveer 7,5 m² gemiddeld. Afhankelijk van exacte maat pas je het aantal planten aan.'
+      }],
+      8: [{
+        text: 'Bestellen: 30 Pachysandra + 20 Waldsteinia + 15 Geranium + compost + mulch',
+        info: 'BESTELLIJST (voor ~7,5 m²):\n\n• 30× Pachysandra terminalis (basisdekking, wintergroen donkergroen)\n• 20× Waldsteinia ternata (gele bloei mei, accent)\n• 15× Geranium macrorrhizum "Spessart" (roze bloei, geurig blad)\n\nBESTELBRONNEN:\n• Bodembedekkers.nl (gespecialiseerd, €2-3/plant)\n• De-bosrand.nl (kwaliteit, iets duurder)\n• Intratuin/Tuinmeister (lokaal, ~€3-4/plant)\n\nEXTRA:\n• 10 zakken compost (~€40)\n• 5 zakken cacaodop-mulch (~€30)\n\nTotaal project: ~€220-320\n\nTIMING: bestel eind augustus voor levering begin september (optimaal plantmoment).\n\nAANPASSEN: is je plek 5m² → neem 70% van aantallen. Is hij 10m² → neem 130%.'
+      }],
+      9: [{
+        text: 'Planten! Compost + planten in drifts + mulchen',
+        info: 'PLANTDAG (tussen 5-25 september):\n\n1. VOORBEREIDEN:\n• Grond licht losmaken (10-15cm diep, niet dieper vanwege struikwortels)\n• Laag compost van 3-5cm gelijkmatig uitstrooien\n• Licht inharken\n\n2. PLANTEN IN DRIFTS (niet gespikkeld, groepjes):\n• Pachysandra: verspreid als basis, ~4-6 planten per m² cluster\n• Waldsteinia: 2 clusters van 10 planten aan weerszijden\n• Geranium macrorrhizum: 3 drifts van 5 planten op bloei-accent plekken\n\n3. PLANT-TECHNIEK:\n• Gat graven iets groter dan potkluit\n• Plant erin op bodemniveau (niet dieper)\n• Aandrukken\n• Direct water geven\n\n4. MULCHEN:\n• Cacaodop (of houtsnippers) TUSSEN de planten (niet erop!)\n• Laag van 3-5cm\n• Houdt vocht vast, onderdrukt onkruid-zaailingen eerste jaar\n\n5. AFRONDEN:\n• Royaal water geven (10-15 L/m²)\n• Foto maken — beginpunt van je project!'
+      }],
+      10: [{
+        text: 'Eerste weken water geven als droog',
+        info: 'De planten moeten wortelen vóór de winter. Eerste 4-6 weken:\n\n• Grond voelen met vinger: droog → water geven\n• 1-2× per week diep water bij droogte\n• Bij regen: niks doen\n\nNa half november: stoppen met water (anders bevriezen wortels).'
+      }],
+      4: [{
+        text: 'JAAR 1: laatste onkruid-wiedgebeurtenis (als extra taak mei-juni)',
+        info: 'Jaar 1 na planting: planten zijn nog niet gesloten. Dus:\n\n• April/mei: laatste keer onkruid wieden tussen nieuwe planten (~30 min)\n• Juni/juli: kleine onkruid-controle (~15 min)\n• Augustus: eventueel nog 1 keer\n\nDaarna: planten sluiten zich steeds meer. Jaar 2 = veel minder werk. Jaar 3 = bijna niks.\n\nWaldsteinia en Geranium bloeien al in hun eerste jaar → direct kleur!'
+      }]
+    },
+    innovatie: 'Na 3 jaar is deze plek VOLLEDIG ONDERHOUDSVRIJ. Jaarlijkse tijdsbesparing: 5-10 uur wieden. Investering verdient zichzelf terug in 1-2 seizoenen aan tijd. Overweeg dit patroon te herhalen op andere "moeilijke" plekken in de tuin waar je elk jaar tegenaan loopt.'
+  },
+  bamboe: {
+    name: 'Bamboe (woekeraar)', icon: '🎋', zone: 'achter',
+    sub: 'Bij schuur links achter',
+    issues: 'WOEKERT VIA ONDERGRONDSE RHIZOMEN. Kan meters ver nieuwe scheuten geven. Zonder ingrijpen verovert hij de tuin. Maandelijkse controle + scheuten doorbreken houdt hem in bedwang.',
+    tasks: {
+      5: [{
+        text: 'NIEUWE SCHEUTEN CONTROLEREN & doorbreken (maandelijks!)',
+        info: 'Bamboe (waarschijnlijk Phyllostachys) loopt uit vanuit rhizomen die horizontaal ondergronds groeien, soms 3-5m ver. Nieuwe scheuten komen op als vingerdikke "asperges" omhoog.\n\nWERKWIJZE:\n• Loop maandelijks (mei-augustus) de zone rond de bamboe af\n• Zoek scheuten buiten de gewenste zone\n• Scheuten van <30cm zijn nog zacht: met VOET doorbreken of met mes doorsnijden\n• Scheuten van >30cm worden verhout: spade of snoeischaar nodig\n• Wacht NIET tot ze bamboe-stok zijn geworden (dan is het slepen)\n\nBELANGRIJK: BREEK, niet uittrekken. Uittrekken kan rhizomen meetrekken = meer woekering.'
+      }],
+      6: [{
+        text: 'Scheuten-controle herhalen',
+        info: 'In juni is de groei op z\'n heftigst. Nieuwe scheuten verschijnen elke 2-3 weken. Blijf alert.'
+      }],
+      7: [{
+        text: 'Scheuten-controle herhalen',
+        info: 'Juli: langzaamaan minder scheuten. Laatste paar weken alertheid.'
+      }],
+      8: [{
+        text: 'Laatste controle van het seizoen',
+        info: 'Na augustus stopt de scheuten-groei grotendeels. Laatste rondje om de tuin.'
+      }],
+      2: [{
+        text: 'WINTERPLAN: overweeg rhizomebarrière (permanent)',
+        info: 'Als het maandelijks scheuten doorbreken je frustreert, overweeg een rhizomebarrière:\n\n• HDPE-bamboe-folie (60cm diep, €5-10 per m)\n• Rondom de gewenste zone graven (60cm diep sleuf)\n• Folie in sleuf, 5cm boven grondniveau laten uitsteken\n• Aanvullen en aandrukken\n\nEénmalig zwaar werk (halve dag) = permanent probleem opgelost.\n\nALTERNATIEF: radicaal rooien (gehele plant + rhizomen opgraven, 1 dag werk). Dan kun je bamboe nieuw aanplanten IN BAK of IN BARRIÈRE.'
+      }]
+    },
+    innovatie: 'Bamboe geeft een mooie "Aziatisch-rustieke" sfeer bij je speelhoek, maar is een levenslang gevecht. Overweeg: in plaats van bestaande bamboe, een andere sierstructuur-plant die niet woekert. Voorbeelden: Miscanthus (siergras, rustig), Pampasgras (imposant), Phyllostachys in grote pot (veilig). Of accepteer de woekerjacht als prijs voor het exotische beeld.'
+  },
+  schuur_achter: {
+    name: 'Schuur links achter', icon: '🏚️', zone: 'achter',
+    sub: 'Functionele opslag: fietsen, gereedschap, opslag',
+    issues: 'Houten schuur = jaarlijks onderhoud. Rot ontstaat meestal onderaan palen en dakranden. Regelmatige check + beits elke 3-5 jaar = 20+ jaar levensduur.',
+    tasks: {
+      3: [{
+        text: 'Voorjaarscheck: rot, dak, inhoud ordenen',
+        info: 'NA DE WINTER:\n• Onderkant palen: met schroevendraaier voelen of hout zacht is (= rot)\n• Dakranden: bladeren + mos weghalen\n• Binnenkant: vochtige plekken? Lekkage?\n• Inhoud: wat heb je eigenlijk? Ruim op, zet systematisch\n\nBelangrijk voor fietsen: vocht is erger voor ketting/lagers dan kou. Zorg voor ventilatie.'
+      }],
+      9: [{
+        text: 'Elke 3-5 jaar: beits/impregneer houtwerk',
+        info: 'Hout laten beitsen verlengt levensduur van 5 naar 20+ jaar.\n\nMATERIAAL:\n• Houtbeits of olie op basis van dennenhars\n• Merken: Sikkens Cetol, Osmo, Owatrol\n• Kleur: passend bij je tuin (vaak donkerbruin/grijs is mooi)\n\nWERKWIJZE:\n• Droog zonnig weer\n• Licht schuren als houtoppervlak ruig is\n• 2 lagen aanbrengen, 24u tussen\n• Extra aandacht voor onderkant palen + kopse kanten van planken\n\nTIMING: september (warm maar niet heet, 1-2 weken droog).'
+      }],
+      10: [{
+        text: 'Bladeren van dak halen',
+        info: 'Bladeren op schuurdak vergaan tot slijk = dakrot. Jaarlijks in oktober/november weghalen.\n\nBij plat of licht hellend dak: met bezem eraf vegen. Bij pannen-dak: alleen bladeren uit goten + dakranden.'
+      }],
+      11: [{
+        text: 'Winter-check: inhoud vorstgevoelig?',
+        info: 'Check voordat strenge vorst komt:\n• Water-gieters, slangen leeg\n• Verf/chemicaliën vorstbestand?\n• Motoren van machines winterklaar (benzine-stabilisator)\n• Fietsen: bandenspanning ok (zakt af bij kou)\n\nAlternatief binnen halen bij ondeugdelijke opslag: waardevolle gereedschap, motoren.'
+      }]
+    },
+    innovatie: 'Als je schuur te vol of ongeorganiseerd wordt: overweeg haken/planken-systeem aan muren. Verdubbelt effectieve ruimte. Gereedschap aan muur hangen = ziet er strak uit + weet altijd waar iets is.'
+  },
+  overkapping: {
+    name: 'Overkapping (buitenkamer)', icon: '🏡', zone: 'terras',
+    sub: 'Open overkapping bij terras met houtkachel — zomergebruik',
+    issues: 'Open constructie = blootgesteld aan regen/wind/vocht. Houtkachel binnen = roet in schoorsteen. Jaarlijks onderhoud houdt hem 15+ jaar mooi.',
+    tasks: {
+      4: [{
+        text: 'Voorjaarscheck: schoonmaak, schoorsteen, kachelglas',
+        info: 'VOOR HET SEIZOEN:\n• Hele overkapping bezemschoon (spinnewebs, bladeren in hoeken)\n• Houtkachel: schoorsteen laten vegen (1× per jaar, gecertificeerd schoorsteenveger)\n• Kachelglas schoonmaken (speciale kachelglasreiniger of krant + as)\n• Houtvoorraad check: genoeg voor volgend winter? Bij-bestellen tegen zomerprijzen\n• Verlichting (lichtslinger): lampjes testen, vervangen'
+      }],
+      9: [{
+        text: 'Eind zomer: begin herfst voorbereiden',
+        info: 'Voor herfst:\n• Kussens/kleden binnen halen (of in waterdichte box)\n• Houtvoorraad stapelen onder afdak — droog blijven\n• Kaarsen/lichten check voor gezellige avonden\n• Tafel inpakken als nodig (hout kan uitzetten met vocht)'
+      }],
+      12: [{
+        text: 'Wintersluiting: afdekken, leeg maken',
+        info: 'OVERWINTEREN:\n• Alle losse spullen binnen of in waterdichte boxen\n• Tafel: afdekken of binnen zetten\n• Houtkachel: as verwijderen, deur open laten (lucht = geen condens)\n• Verlichting: geen probleem om aan te laten werken\'s winters — geeft sfeer\n\nOVERWEGING:\n• Scheidingswand(jes) voor tegen koude wind uit bepaalde richting?\n• Infrarood-heater voor vroege voorjaar en late herfst?'
+      }]
+    },
+    innovatie: 'Overkapping is nu vooral zomer-use. Overweeg: zijwand(en) met glas of beits houten schotten voor 3-seizoenen gebruik. Met infrarood-heater bruikbaar vanaf maart tot november. Terugverdienmodel op gebruikstijd aanzienlijk.'
+  },
+  struik_konijnen: {
+    name: 'Grote struik bij konijnen', icon: '🌳', zone: 'achter',
+    sub: 'Te identificeren — glanzende donkergroene bladeren, 1,5-2m hoog',
+    issues: 'Soort nog niet zeker. Kandidaten: Aucuba japonica (Broodboom), Prunus laurocerasus (Laurierkers), Viburnum tinus of Rhododendron. Identificatie volgt bij eerstvolgende bloei — noteer dan bloemkleur + periode.',
+    tasks: {
+      4: [{
+        text: 'Check op bloei voor identificatie',
+        info: 'In april-mei bloeien de kandidaten:\n\n• AUCUBA: onopvallende paarse bloempjes, later rode bessen\n• LAURIERKERS: witte kegels in april-mei\n• VIBURNUM TINUS: witte doldertjes, al in februari-april\n• RHODODENDRON: grote trossen paars/roze in mei\n\nNoteer:\n• Datum eerste bloem\n• Kleur\n• Geur (ja/nee)\n• Bloemvorm (kegel, tros, doldertje)\n\nMaak foto, stuur door — definitieve identificatie volgt dan.'
+      }],
+      9: [{
+        text: 'Check op vruchten',
+        info: 'Na bloei:\n• AUCUBA: felle rode bessen (vrouwelijke planten)\n• LAURIERKERS: donkere bessen, giftig\n• VIBURNUM TINUS: donkerblauwe vruchten\n• RHODODENDRON: droge zaaddozen, onopvallend\n\nCombi bloei + vrucht = 99% zekere identificatie.'
+      }]
+    },
+    innovatie: 'Tot identificatie: minimaal onderhoud. Geen snoei tenzij echt nodig. Zet ter herinnering een plantenlabel met "onbekend, ID bij bloei" eraan.'
+  },
+  onbekende_boom: {
+    name: 'Speelelementen achterin', icon: '🛝', zone: 'achter',
+    sub: 'Oude boomhut + trampoline + voetbaldoel',
+    issues: 'Boomhut achterin is niet meer in gebruik. Trampoline op gazon (moeilijk om onder te maaien). Voetbaldoel: staat vast of verplaatsbaar?',
+    tasks: {
+      4: [{
+        text: 'Voorjaarscheck speelelementen',
+        info: 'Eens per jaar visueel controleren:\n• Trampoline: net nog heel? Elastieken OK? Frame stabiel?\n• Voetbaldoel: stabiel? Net heel?\n• Oude boomhut: bordje "niet betreden" overwegen als hij echt verouderd is\n\nGeen direct onderhoud — alleen "veilig of afbreken" beslissen.'
+      }],
+      6: [{
+        text: 'Gras onder trampoline',
+        info: 'Gras onder trampoline krijgt geen zon + regen = sterft af. Opties:\n• Trampoline elke 2 weken verplaatsen (niet realistisch)\n• Onder trampoline: tegel/platform leggen (geen gras-onderhoud)\n• Trampoline verplaatsen naar minder zichtbaar plekje\n• Grasvrij: mulch of grind eronder (eenmalig)'
+      }]
+    },
+    innovatie: 'Als oude boomhut over 1-2 jaar helemaal vervalt, overweeg te recycleren: houten planken naar compost-bak, touwen naar hangmat-ophanging, enz. Of laten begroeien met klimop voor romantisch beeld (wel kijken dat structureel niet gevaarlijk wordt).'
+  },
+  knotwilgen: {
+    name: 'Knotwilgen (2×)', icon: '🌳', zone: 'zijkant',
+    sub: 'Links achter — oude karakterbomen',
+    issues: 'Oude knotwilgen zijn cultuurhistorisch waardevol maar kwetsbaar. Elke 2 jaar knotten voorkomt dat takken te zwaar worden om af te voeren én vermindert kans op uitscheuren van de knot.',
+    tasks: {
+      1: [{
+        text: 'Knotten (elke 2 jaar): alle takken boven de knot afzagen',
+        info: 'KNOTTEN = de takken die vanuit de bovenkant ("knot") van de stam groeien, volledig terugzetten tot net boven de knot. Niet half, helemaal tot het oude hout.\n\nJouw 2-jaars cyclus is slim: takken blijven 3-5 cm dik = hanteerbaar met een hand-kettingzaag of goede snoeizaag. Bij een 3-jarige cyclus worden takken 5-8 cm dik = zwaar tillen, moeilijk afvoeren, belasting op oude knot.\n\nWANNEER: december-februari (blad eraf = je ziet structuur). NOOIT in sap-tijd (maart-mei) — wilg "bloedt" dan dood.\n\nVEILIGHEID BIJ OUDE WILGEN:\n• Check eerst de knot zelf — zachte/rotte plekken? Holtes? Vogelnesten?\n• Nooit klimmen in oude knotwilg — stam kan onverwacht breken\n• Trapladder of telescopische snoeizaag vanaf de grond\n• Helm + veiligheidsbril\n\nAFVOER: bundelen met touw (max 1 meter voor gemeente) of versnipperen.'
+      }],
+      2: [{
+        text: 'Inspectie knot: rot, holtes, dierenleven checken',
+        info: 'Oude knotwilgen zijn ECOSYSTEMEN op zich. Mogelijke bewoners: steenmarter, vleermuizen, koolmezen, bosuil, insecten.\n\nChecklist tijdens inspectie:\n• Rotte plekken aan onderkant knot (vinger erin kunnen duwen = probleem)\n• Verticale scheuren in stam (uitscheuring aanstaande)\n• Schimmelgroei (tonderzwam = stam intern verrot)\n• Nesten of holen (wacht met knotten tot na broedseizoen)\n\nBIJ PROBLEMEN: boomspecialist bellen. Knotwilgen kunnen nog 10+ jaar mee met goede zorg, of acuut instortingsgevaar vormen.'
+      }],
+      11: [{
+        text: 'Takken die vanzelf zijn afgebroken opruimen',
+        info: 'Tussen knot-sessies kunnen takken spontaan afbreken, vooral bij wind. Lichtjes opruimen. Kleine takjes in de border laten liggen = mulch + insecten-habitat.\n\nGrote afgebroken takken: check of de knot zelf beschadigd is. Wond vlak snoeien (anders invalshoek voor rot).'
+      }]
+    },
+    innovatie: 'Knotwilgen zijn biodiversiteits-hotspots. Plaats een bijenhotel of uilenkast in de buurt (niet IN de knot zelf). Als één wilg uitvalt: stek een scheut — wilgen wortelen extreem makkelijk, zo behoud je de genetische lijn.'
+  },
+  klimop_hek: {
+    name: 'Klimop op hek', icon: '🍃', zone: 'zijkant',
+    sub: 'Rechterzijkant — afspraak met buren',
+    issues: 'Biodiversiteit-parel: late bloei voor bijen, bessen voor vogels, nestgelegenheid. Onderhoud vooral vorm/volume beheersen.',
+    tasks: {
+      4: [{
+        text: 'Vormsnoei: lange scheuten terug, hoogte checken',
+        info: 'In het voorjaar zie je hoe de klimop de winter doorkwam. Scheuten die over hek uitgroeien aan jouw kant kun je terugknippen.\n\nVoor dikke takken: snoeischaar of takkenschaar. Voorzichtig bij de hekconstructie — oude klimop kan drukken/buigen.\n\nBij jullie afspraak "dicht mogen laten groeien": houd het functioneel. Té dik klimop kan het hek scheeftrekken of breken.'
+      }],
+      6: [{
+        text: 'Zomercheck: dikke takken, hekschade?',
+        info: 'Klimop wordt met de jaren dikker en zwaarder. Check of het hek het nog aankan — scheefhangen, uitbolling?\n\nVroeg ingrijpen (vóór herfststormen) = hek blijft heel.\n\nNiet te rigoureus zomer-snoeien: broedseizoen loopt tot half juli. Alleen probleem-takken.'
+      }],
+      10: [{
+        text: 'Bloei volop — LAAT STAAN, late bijenvoedselbron',
+        info: 'Oktoberbloei van klimop = redding voor late bijen en hommels. Eén van de weinige planten die dan nog nectar geeft.\n\nAls je geluk hebt: honingbijen, hommelkoningen voor winterreserve, vlinders (atalanta, dagpauwoog).\n\nABSOLUUT NIET SNOEIEN in oktober/november. Wacht tot voorjaar.'
+      }],
+      11: [{
+        text: 'Na bloei: laatste check hekconstructie',
+        info: 'Bessen ontwikkelen zich (worden zwart in januari-februari). Laat bessen staan — voer voor merels, lijsters, spreeuwen in moeilijke wintermaanden.\n\nCheck hekstabiliteit: losse palen vastzetten, beugels controleren, scheef groeiende klimop bijbinden.'
+      }]
+    },
+    innovatie: 'Klimop op hek is DE biodiversiteits-winner die veel mensen onterecht lelijk vinden. Jullie hebben geluk met buren die dit begrijpen. Overweeg een insectenhotel erin te verwerken.'
+  },
+  beukenhaag_lang: {
+    name: 'Beukenhaag zijkant (hoog)', icon: '🍂', zone: 'zijkant',
+    sub: 'Doorlopend vanaf straat, langs oprit, tot klimmuur achter · marcescent (bruine bladeren in winter = normaal)',
+    issues: 'Doorlopend van straat tot klimmuur achter = één lange haag, één snoeibeurt. Bruine bladeren in winter: MARCESCENTIE, normaal gedrag beuk. Uitloop april/mei.',
+    tasks: {
+      3: [{
+        text: 'Voorjaarssnoei vóór uitlopen: dode takken, vorm corrigeren',
+        info: 'Bij lange haag: structuur-moment. Let op oneffenheden in de lengte, kale plekken, dode takken.\n\nTIP voor lange haag: span een touw tussen twee palen op gewenste hoogte. Alles erboven snoei je weg — gegarandeerd recht over 20+ meter.\n\nKale plekken: rondom extra scherp terug om compensatie-uitloop te stimuleren. Beuk loopt uit oud hout alleen in VOORJAAR — niet in zomer!'
+      }],
+      4: [{
+        text: 'Organische mest langs voet (gedroogde koemest)',
+        info: 'Lange haag = veel voet-lengte = veel mest nodig. Gedroogde koemestkorrels, 50-80g per strekkende meter.\n\nJonge haag (eerste 5 jaar): extra portie + bladcompost als mulch. Explosieve groei.\n\nOude gevestigde haag: minder kritiek, maar waardevol voor bladkleur en dichtheid.'
+      }],
+      6: [{
+        text: 'St. Jan-snoei eind juni: max 1/3 inkorten',
+        info: 'De "St. Jan-scheut" = tweede groeischeut die beuk maakt na 24 juni. Snoeien nu = compact voor de zomer.\n\nPraktisch: bewolkte dag (geen zonnebrand op vers snoeivlak). Elektrische heggenschaar, handmatig bij dikke haag.\n\nBij lange haag: in blokken werken. Ene dag eerste 10m, week later de rest.'
+      }],
+      8: [{
+        text: 'Droogte-check, vooral jongere secties',
+        info: 'Beuk is ondiepe wortelaar = droogtegevoelig. Jonge secties of arme grond lijden eerst. Signaal: slappe bladeren, verkleuring.\n\nBij droogte: diep water aan de voet, 10-15L per strekkende meter. NIET over het blad (zonnebrand + ongelijke groei).'
+      }],
+      9: [{
+        text: 'Tweede snoei begin september — NIET later',
+        info: 'KRITIEK: beuk moet vóór half september klaar zijn met snoeien. Snoei stimuleert jonge uitloop. Jong blad heeft tijd nodig om te verharden voor de vorst. Te laat = jong blad bevriest = kale plekken volgend jaar.\n\nVoor lange haag: plan ruim van tevoren, liefst eerste week september. Droge periode afwachten.'
+      }],
+      11: ['Bladeren aan voet laten liggen als mulch']
+    },
+    innovatie: 'Bij lange haag: overweeg één sectie (2-3 meter) ONGESNOEID te laten — gaat dan bloeien en zaden dragen. Schuilplaats voor vogels + voedsel. Kies een hoekje dat toch al verstopt is.'
+  },
+  beukenhaag_voor: {
+    name: 'Beukenhaag voor (laag)', icon: '🍂', zone: 'voor',
+    sub: 'Lage haag aan straat (ZW 240°)',
+    issues: 'Beuk (Fagus) houdt bruine bladeren de hele winter vast (= MARCESCENTIE, normaal). In april/mei duwen groene knoppen de oude bruine bladeren eraf. Alleen zorgen maken bij eind mei nog grote kale stukken zonder groene uitloop. ZW-ligging = droogtegevoelig.',
+    tasks: {
+      3: [{
+        text: 'Voorjaarssnoei vóór uitlopen: strak in model',
+        info: 'Lage hagen (tot 80-100 cm) worden strakker geknipt. Formele uitstraling voor straatkant.\n\nTouw spannen op gewenste hoogte = recht resultaat. Zijkanten: lichte taps-vorm (onder breder dan boven). Dit laat licht op de onderkant vallen = haag groen tot onderaan ipv kale basis.'
+      }],
+      6: [{
+        text: 'St. Jan-snoei eind juni, compact houden',
+        info: 'Lage hagen moeten vaker gesnoeid worden om strak te blijven. Eind juni essentieel.\n\nOmdat het een "showcase" haag is aan straat: netjes werken loont.'
+      }],
+      9: [{
+        text: 'Tweede snoei begin september — strak voor winter',
+        info: 'Laatste snoei voor winter. Even strak als voorjaar — je ziet de haag de hele winter door (beuk houdt jong blad).\n\nNiet na half september snoeien.'
+      }],
+      11: ['Bladeren aan voet laten liggen als mulch']
+    },
+    innovatie: 'Lage beukenhaag als "afschermer" van lavendelstrook: beuk bovenop, lavendel ervoor. Klassieke combinatie.'
+  },
+  terras: {
+    name: 'Terras achter (tegels)', icon: '🧱', zone: 'terras',
+    sub: 'Direct achter huis · Boom 1 staat middenop, Boom 2 in strookje gras langs zijkant · overkapping aan NW-kant',
+    issues: 'Groot tegel-terras tussen huis en overkapping. Boom 1 (vroegbloeier, Notarisappel-hypothese) staat door tegels heen midden op terras. Onkruid tussen tegels is eeuwig probleem. Bladval van Boom 1 + bloesemval in mei geeft extra werk.',
+    tasks: {
+      3: [{
+        text: 'Grote voorjaars-schoonmaak: onkruid eruit, voegen checken',
+        info: 'Voorjaar = winter-onkruid (muur, paardenbloem) is hervat, nieuw onkruid nog klein. Moment om ALLES aan te pakken.\n\nMETHODE KEUS:\n• VOEGENKRABBER (€10-20): handmatig tussen tegels. Arbeidsintensief maar effectief + geen chemie.\n• ONKRUIDBRANDER (gas of elektrisch, €30-150): verbrand het blad, plant sterft. Voorzichtig bij droog materiaal in buurt.\n• HEETWATERAPPARAAT (huren €50/dag): professioneler, werkt dieper.\n• BOSMAAIER: jouw huidige methode. Goed voor lange stengels, laat wortels achter — komt snel terug.\n\nCheck ook de voegen: loszittend voegzand? Bijvullen met speciaal voegzand voorkomt nieuw onkruid voor 1-2 jaar.'
+      }],
+      5: [{
+        text: 'Onderhoudsbeurt onkruid (fysiek)',
+        info: 'Voegenkrabber of onkruidbrander. Maandelijks een half uur = terras blijft netjes.\n\nPROFESSIONELE TIP: na regen werken = onkruid laat makkelijker los uit natte voeg.'
+      }],
+      7: [{
+        text: 'Zomer-onderhoud: hoogste groeitijd',
+        info: 'Juni-augustus groeit onkruid het snelst. Vaker kort (1× per 2-3 weken) is minder werk dan 1× per 2 maanden lang.\n\nBosmaaier-aanpak is prima voor grote stengels, maar laat wortels achter = nieuwe uitloop binnen 2-3 weken.'
+      }],
+      10: [{
+        text: 'Najaars-grondige beurt vóór winter',
+        info: 'Eind oktober: laatste grote beurt. Ook: bladeren en organisch materiaal TUSSEN tegels weghalen — wordt anders compost voor volgend jaar-onkruid.\n\nCheck voegen op scheuren, wiebelende tegels, mos op schaduwige delen.'
+      }]
+    },
+    innovatie: 'DUURZAME OPLOSSING: vervang voegzand door polymeer-voegzand (Techniseal/Dansand, €30-50 per zak). Hardt uit na water, 5-10 jaar onkruidvrij zonder chemie. Eenmalige investering.\n\nALTERNATIEF: plant bewust iets laags in de voegen (tijm, Soleirolia, mos) — verdringt onkruid + groen effect. Werkt als je geen zware belasting hebt.'
+  },
+  spuit_gids: {
+    name: 'Spuit-gids & techniek', icon: '💧', zone: 'algemeen',
+    sub: 'Hoe spuit je Bt of minerale olie',
+    issues: 'Geen professioneel gereedschap nodig voor 3 appelbomen. Juiste spuit + techniek + bescherming = verschil tussen effectief en nutteloos.',
+    tasks: {
+      1: [{
+        text: 'Aankoop: rugsproeier of drukspuit 5 liter',
+        info: 'WAT JE NODIG HEBT:\n\nRUGSPROEIER (aanbeveling):\n• Gardena Pump Sprayer 5L (~€35)\n• Hozelock 5L Pro (~€45)\n• Berthoud Cosmos 5L (~€55, meest duurzaam)\n\nDRUKSPUIT (alternatief):\n• Gardena 5L Comfort (~€50)\n\nWAT TE KIJKEN:\n• Vulopening breed genoeg voor maatbeker\n• Messing sproeikop (niet plastic, gaat langer mee)\n• Telescopische lans = bereik tot 2-3 meter hoog zonder ladder\n• Verstelbare sproeikop (fijne nevel tot harde straal)\n\nEXTRA:\n• Maatbekertje voor doseren (meestal bijgeleverd)\n• Reserve-pakkingen (drogen uit na enkele jaren)\n\nWAAR KOPEN: Intratuin, Praxis, Welkoop, goed tuincentrum. Online vaak iets goedkoper.'
+      }],
+      2: [{
+        text: 'Voorbereiding spuit: reinigen, testen, vullen',
+        info: 'VOOR GEBRUIK:\n\n1. REINIGEN:\n• Nieuwe spuit: vullen met schoon water, sproeien tot leeg\n• Gebruikte spuit: controleren op oude residu. ALTIJD schoonmaken tussen verschillende middelen\n\n2. POMPTEST:\n• 5L water (niet meer — pomp werkt minder goed bij volle tank)\n• 10-15× pompen tot druk voelt\n• Even sproeien op gras = test nevel en druk\n\n3. OPLOSSING AANMAKEN:\n• Bt: 1-1.5g per liter water (check exacte merk). Voor 3 appelbomen: 500ml = 0.5-0.75g poeder.\n• Minerale olie: 20-30ml per liter water. Voor 3 appelbomen: 500ml = 10-15ml olie.\n\n4. GOED SCHUDDEN in de spuit — olie en water willen scheiden.\n\n5. FILTER CHECK: in sproeikop zit fijn zeefje. Verstopping = dun straaltje of niets.'
+      }],
+      3: [{
+        text: 'Bescherming: wat draag je tijdens spuiten',
+        info: 'MINIMUM BESCHERMING:\n\n• VEILIGHEIDSBRIL (€5): Bt/olie in oog = irritatie\n• HANDSCHOENEN (tuin- of latex): huidcontact vermijden\n• LANGE MOUWEN + lange broek\n• DICHTE SCHOENEN (geen teenslippers)\n\nEXTRA VOOR MINERALE OLIE:\n• Spatbril met zijkanten — olie spat meer dan water\n• Oude kleding die na afloop in was gaat\n\nNIET NODIG VOOR BT:\n• Ademmasker (niet toxisch)\n• Overall\n\nNA SPUITEN:\n• Handen grondig wassen\n• Bril/handschoenen afspoelen\n• Spuit uitspoelen\n\nHUISDIEREN + KINDEREN: 1-2 uur weg van behandeld gebied. Na droging veilig — Bt is onschadelijk voor zoogdieren.'
+      }],
+      4: [{
+        text: 'Spuittechniek: zo spuit je een appelboom',
+        info: 'DE JUISTE TECHNIEK:\n\n1. TIMING:\n• Windstil (max 10 km/u — anders drift je halve tuin)\n• Droog, geen regen voorspeld eerste 6 uur\n• 12-25°C (Bt werkt niet bij vorst, olie niet bij hitte)\n• \'s AVONDS voor Bt — zon breekt werkzame stof af\n\n2. OPZET:\n• Begin aan de WINDAFWAARTSE kant — anders spuit je terug op jezelf\n• Stand onder de wind, nevel gaat weg van je gezicht\n\n3. SPROEIPATROON:\n• Sproeikop op fijne nevel\n• Van BENEDEN naar BOVEN werken\n• Elk takje moet nat worden — "druppelnat", wanneer druppels beginnen te vallen ben je klaar\n• ONDERKANT van bladeren NIET VERGETEN — daar zitten de rupsen!\n• Stam en dikke takken ook (voor olie — eitjes zitten op bast)\n\n4. VOLGORDE VOOR JOUW 3 APPELBOMEN:\n• Check windrichting voor je begint\n• Altijd loop MET de wind mee, niet ertegenin\n• Bij wind uit het bos: begin bij boom 3 (achterin), werk naar duo toe\n• Bij wind vanaf huis: begin bij duo, eindig bij boom 3\n\n5. HOEVEELHEID:\n• Per boom 150-200ml druppelnat\n• 500ml totaal genoeg voor 3 bomen\n\n6. NA SPUITEN:\n• Spuit leegspuiten (rest op stenen, niet afvoer)\n• 2× naspoelen met schoon water\n• Droog bewaren, omgekeerd staand'
+      }],
+      5: [{
+        text: 'Schoonmaak spuit NA gebruik',
+        info: 'Dit vergeten mensen — daarom werken hun spuiten niet na één seizoen.\n\nSTAPPEN:\n1. Resterende oplossing leegspuiten (stenen/grind, niet riool/vijver)\n2. Vullen met 1-2L schoon water + scheutje groene zeep\n3. Pompen + sproeien tot leeg (reinigt pomp, leidingen, sproeikop)\n4. Nog 1× met alleen schoon water\n5. Sproeikop losdraaien, zeefje afspoelen\n6. Droogblazen of ondersteboven drogen\n7. Opslag: droge donkere plek, deksel los (pakking niet onder druk)\n\nBIJ OLIE: warm water voor spoelen. Olie hecht aan koud plastic.\n\nWINTER: spuit helemaal leeg. Water in spuit = bevriezing = gebarsten onderdelen.'
+      }],
+      11: [{
+        text: 'Voorraad check: middelen + spuit onderhoud',
+        info: 'EINDE SEIZOEN CHECKLIST:\n\n• Rest Bt: houdbaarheidsdatum. 2 jaar in originele verpakking, donker/koel. Open zak = sneller slechter.\n• Minerale olie: lang houdbaar, geen probleem volgend jaar.\n• Spuit: pakkingen controleren, sproeikop zeefje, slanglekkage\n• Reserve-onderdelen overwegen (pakkingen €2-5, sproeikop €5-10)\n\nBESTELLIJST VOLGEND VOORJAAR (reminders staan al in app):\n• Januari: nieuwe Bt als oude verlopen\n• Februari: olie checken vóór spuit-moment'
+      }]
+    },
+    innovatie: 'Eén spuit + simpele regels = alle basis-plaagbestrijding mogelijk. Dezelfde spuit gebruik je ook voor: rozen (zeepsop tegen bladluis), hortensia\'s (ijzerchelaat bij chlorose), terras (onkruid-aanpak met azijn). Investering van €40 betaalt zich in één seizoen terug.'
+  },
+  borders_achter: {
+    name: 'Borders achter (2×)', icon: '🌿', zone: 'achter',
+    sub: 'Langs bosrand',
+    issues: 'Grenzen aan bos = vochtig, deels schaduw. Mulchen is cruciaal.',
+    tasks: {
+      3: ['Uitgebloeide stengels vorig jaar wegknippen'],
+      4: ['Mulchen met compost/bladcompost, 3-5 cm'],
+      5: ['Onkruid wieden vóór zaadvorming'],
+      6: ['Uitgebloeide bloemen knippen voor tweede bloei'],
+      9: ['Delen van vaste planten die te groot worden'],
+      10: ['Bladeren LATEN liggen tussen vaste planten = winterdek'],
+      11: ['Stengels LATEN staan tot maart — insecten-habitat']
+    },
+    innovatie: 'Bosrand-borders: Brunnera, Astilbe, Hosta, Heuchera, varens. Minder water, past bij schaduw.'
+  },
+  vlinderstruiken: {
+    name: 'Vlinderstruiken (3×)', icon: '🦋', zone: 'achter',
+    sub: 'In een border achter',
+    issues: 'Bloeien op nieuw hout = rigoureus terugsnoeien in maart.',
+    tasks: {
+      3: ['Rigoureus terugsnoeien tot 30-50 cm — lijkt extreem, moet echt'],
+      4: ['Lichte compost aan voet'],
+      7: ['Uitgebloeide bloemen knippen = door-bloei tot september'],
+      9: ['Zaden laten staan voor vogels of knippen tegen uitzaai']
+    },
+    innovatie: 'Vlinderstruik trekt vlinders aan maar biedt geen voedsel voor rupsen. Combineer met brandnetel-hoekje of look voor échte populatie.'
+  },
+  rozen: {
+    name: 'Rozen', icon: '🌹', zone: 'achter',
+    sub: 'Border',
+    issues: 'Snoeien boven naar buiten gericht oog.',
+    tasks: {
+      3: [{
+        text: 'Hoofdsnoei: 3-5 sterke takken op 20-30 cm, rest weg. Rozenmest.',
+        info: 'DE GOUDEN REGELS:\n1. Snoei bij droog weer (schimmelinfectie-risico bij regen)\n2. Boven een NAAR BUITEN gericht oog — de nieuwe tak groeit in die richting, je wilt open hart\n3. Schuine snee (45°), aflopend van het oog, 5mm erboven\n4. Scherpe snoeischaar, schoongemaakt met alcohol\n\nKIES DE 3-5 BESTE TAKKEN:\n• Dik (potloodDikte of meer)\n• Jong (1-2 jaar, groene/bruine bast)\n• Naar buiten groeiend\n• Gezond (geen vlekken, geen kanker)\n\nREST WEG: oude zwarte takken, dunne zwakke, naar binnen groeiend, kruisend, beschadigd.\n\nRozenmest direct na snoei: NPK rond 6-5-10. Strooi in cirkel 30 cm rond de voet, licht inharken.'
+      }],
+      4: [{
+        text: 'Bladluis controle — zeepsop bij eerste uitbraak',
+        info: 'Bladluis verschijnt bij eerste jonge scheuten in april. Kolonies op onderkant bladeren en jonge scheuten — groen, zwart of roze.\n\nAANPAK IN STAPPEN:\n1. Eerst handmatig: met duim en wijsvinger afvegen, of spuiten met harde waterstraal. Vaak genoeg.\n2. Zeepsop-recept: 1 eetlepel groene zeep + 1 liter water + scheutje spiritus. Spuiten op onderkant blad bij bewolkt weer.\n3. Lieveheersbeestjes en zweefvliegen eten 100+ bladluizen per dag — niet spuiten als je die ziet.\n\nNIET doen: chemische insecticiden. Roeien alle nuttige insecten uit = volgend jaar erger.'
+      }],
+      5: [{
+        text: 'Mulchen met compost of cacaodoppen',
+        info: 'Mulchlaag van 3-5 cm rondom de voet, niet tegen de stam.\n\nCompost: voedt de plant langzaam, houdt vocht vast, onderdrukt onkruid.\nCacaodoppen: mooi bruin, gaat 2-3 jaar mee, maar opletten met huisdieren (hond/kat kan ziek worden bij opeten).\nGehakseld hout: werkt ook, licht zuur (oké voor rozen).\n\nGeen: verse houtsnippers (onttrekken tijdelijk stikstof), bladeren (te zuur voor rozen).'
+      }],
+      6: [{
+        text: 'Uitgebloeide bloemen knippen voor tweede bloei',
+        info: 'Techniek "deadheading": knip de uitgebloeide bloem weg tot boven de EERSTE VIJFBLADIGE bladeren (niet de bovenste drie-bladige). Daar zit een knop die een nieuwe bloeitak geeft.\n\nWAAROM? De plant steekt energie in zaad-productie (rozenbottel) zodra een bloem uitbloeit. Weg = plant denkt "moet opnieuw" = nieuwe bloei.\n\nDoe dit wekelijks tijdens bloeiseizoen. 2-3 weken na deadheading nieuwe bloemen. Bij veel rozen: knippen met schaar en in emmer verzamelen = rozenwater maken!'
+      }],
+      7: [{
+        text: 'Tweede bemesting (licht, kaliumrijk)',
+        info: 'Halverwege het seizoen lichte bemesting voor de tweede bloei. Niet opnieuw rijke voorjaarsmest — plant zou te veel blad maken.\n\nKies kaliumrijk: patentkali, vinasse, of lichte dosis rozenmest (halve portie van voorjaar). Strooi rond voet, inregenen of lichtjes water geven.\n\nNa augustus NIET meer bemesten — nieuwe scheuten moeten verhouten voor winter.'
+      }],
+      8: ['Uitgebloeide bloemen blijven knippen'],
+      9: [{
+        text: 'Laatste rozenbottels laten staan — signaal voor winterrust + vogels',
+        info: 'Stop met deadheading in september. De rozenbottels die zich vormen zijn drieledig waardevol:\n1. Signaal voor de plant: zaad gezet = tijd voor winterrust = geen nieuwe uitloop die bevriest\n2. Wintervoer voor vogels (merels, lijsters)\n3. Mooie decoratie in kale tuin\n\nRozenbottels van bepaalde rozen zijn ook eetbaar (hoge vit C) — maar controleer de soort.'
+      }],
+      11: [{
+        text: 'Lange scheuten inkorten tegen windschade, NIET diep snoeien',
+        info: 'Verschil tussen november-snoei en voorjaarssnoei:\n• NU (november): alleen lange scheuten die gaan zwiepen bij storm. Max 1/3 inkorten. Geen diepe snoei.\n• VOORJAAR (maart): hoofdsnoei, diep, vormgevend.\n\nWaarom geen diepe snoei in november? Snoei stimuleert uitloop. Nieuwe scheuten in november bevriezen = wonden = schimmel = verzwakte plant.\n\nEnige uitzondering: hele takken die dreigen af te breken of ziek zijn, altijd weg.'
+      }]
+    },
+    innovatie: 'Onderplant rozen met look (Allium) of lavendel — natuurlijk tegen bladluis en schimmel.'
+  },
+  hortensia: {
+    name: "Hortensia's", icon: '💐', zone: 'achter',
+    sub: 'Border',
+    issues: 'Snoeimoment hangt af van type. Boerenhortensia = maart alleen uitgebloeide bloemen. Pluimhortensia = flink terug.',
+    tasks: {
+      3: [{
+        text: 'Boerenhortensia: uitgebloeide bloemen tot eerste gezonde knop. Pluim: terug tot 2-3 knoppen/scheut',
+        info: 'DÉ meest gemaakte fout in Nederlandse tuinen — verkeerd type snoeien = geen bloei.\n\nBOERENHORTENSIA (H. macrophylla) — de klassieke met grote ronde bollen:\n• Bloeit op OUD HOUT (vorig jaar)\n• Alleen oude bruine bloemen wegknippen, tot eerste dikke groene knop\n• NIET terugsnoeien — je snijdt de bloemen van dit jaar eraf\n\nPLUIMHORTENSIA (H. paniculata) — witte puntvormige pluimen:\n• Bloeit op NIEUW HOUT\n• FLINK terugsnoeien tot 2-3 knoppen per scheut\n• Wordt compacter en bloeit rijker\n\nEIKENBLADHORTENSIA (H. quercifolia):\n• Als boerenhortensia behandelen — nauwelijks snoeien\n\nTwijfel welk type? Kijk naar blad en bloemvorm in zomer — ronde bollen = macrophylla, puntige pluimen = paniculata.'
+      }],
+      4: [{
+        text: 'Hortensia-mest + ijzer tegen geelverkleuring',
+        info: 'Hortensia-mest is speciaal: verzuurt de grond licht (lagere pH), rijk aan ijzer en magnesium. NPK ongeveer 6-4-9.\n\nGeelverkleuring (chlorose) is meestal ijzergebrek door te hoge pH. Hortensia\'s in Nederlandse tuinen lijden er vaak aan omdat onze grond licht kalkhoudend is.\n\nDosering: 50-80g per plant, inharken in bovenste 2cm grond, goed inregenen. Geen overdosering — kan wortels verbranden.\n\nExtra ijzer bij ernstige geelverkleuring: "ijzerchelaat" (Sequestreen) — opgelost in water rond de voet.'
+      }],
+      6: [{
+        text: 'Mulchen — hortensia\'s zijn dorstig',
+        info: 'De naam zegt het al: Hydrangea (hydro = water). Dorstig, willen vochtige maar niet drassige grond.\n\nMulchlaag 5-7 cm rondom voet — bladcompost, cocopeat, of gewone compost. Houdt vocht vast in zomer, voorkomt uitdroging, voedt de plant geleidelijk.\n\nBij schaduw/halfschaduw zoals jouw achterborder: mulch is extra belangrijk — minder zon = minder verdamping, MAAR bosrand = bomen trekken veel water weg uit de grond.'
+      }],
+      7: [{
+        text: 'Bij hitte diep water, niet over blad (schimmel)',
+        info: 'DIEP water = gieter direct aan de voet, 10-15L per volwassen plant. Goed inlopen laten, dan opnieuw.\n\nWAAROM NIET OVER BLAD:\n• Meeldauw en grijze schimmel houden van vochtig blad\n• Door hitte-zon verdampt het blad-water zonder de wortels te bereiken\n• Kalkvlekken op bladeren van leidingwater\n\nTip: lege plastic fles met gaatjes in de bodem, ingegraven naast de plant — diep water bereik je door de fles te vullen. Werkt als mini-druppelsysteem.'
+      }],
+      8: [{
+        text: 'Niet meer bemesten — uitloop moet verhouten',
+        info: 'Vanaf augustus stopt de plant met nieuwe scheuten maken en verhard wat er is — proces dat nodig is om de winter door te komen.\n\nBemesten na augustus = sappige nieuwe scheuten die niet verharden voor de vorst = bevriezen = wonden in de plant.\n\nBoerenhortensia\'s zijn extra gevoelig: de bloemknoppen voor volgend jaar zitten al in de uiteinden en moeten goed verharden.'
+      }],
+      10: [{
+        text: 'Uitgebloeide bloemen LATEN zitten — beschermen knoppen tegen vorst',
+        info: 'DIT IS CRUCIAAL en tegen-intuïtief: die oude bruine bloemen zien er misschien rommelig uit, maar fungeren als vorstbescherming voor de knoppen eronder.\n\nDe bloemen vangen vorst op, houden wind tegen, en creëren een micro-klimaat rond de knoppen voor volgend jaar.\n\nAls je ze nu weghaalt: knoppen blootgesteld aan vorst = bevroren bloemknoppen = geen bloei in juni. Een klassieke tuinier-fout.\n\nLaat staan tot MAART, dán pas wegknippen als je de eerste nieuwe knoppen ziet zwellen.'
+      }]
+    },
+    innovatie: 'Blauwe bloemen? Koffiedik + aluin. Roze? Tuinkalk. pH-spel maakt hortensia een chemie-hobby.'
+  },
+  klimroos: {
+    name: 'Klimroos', icon: '🌹', zone: 'muur',
+    sub: 'Klimmuur NW (320°)',
+    issues: 'NW-muur: middag/avondzon, geen ochtendzon. Minder uitbundige bloei dan op zuid, maar bloemen verbleken minder snel.',
+    tasks: {
+      3: [{
+        text: 'Dode takken weg, zijscheuten terug tot 2-3 knoppen. Lange hoofdscheuten LATEN STAAN',
+        info: 'Klimrozen hebben twee typen takken:\n• HOOFDSCHEUTEN (dik, lang, verticaal): structuur van de plant. NOOIT inkorten, alleen als ze te lang worden of ziek zijn.\n• ZIJSCHEUTEN (dunner, groeien uit hoofdscheuten): hierop groeien de bloemen. Terugknippen tot 2-3 knoppen boven de hoofdscheut.\n\nHerkenning: hoofdscheut = ouder, houtiger. Zijscheut = jonger, groener. Snoei bij droog weer, bij vorst onder -5°C niet snoeien.'
+      }],
+      4: [{
+        text: 'Rozenmest rondom voet, niet tegen stam',
+        info: 'Rozenmest: NPK meestal rond 6-5-10, verrijkt met magnesium. Strooi in cirkel van 30-50 cm rond de voet, niet tegen stam (rotting).\n\nDosering: 80-100g per volwassen plant. Licht inharken (alleen bovenste 2-3 cm grond, niet dieper — rozenwortels beschadigen makkelijk).\n\nOp een schaduwmuur: minder bloei dan zon-rozen, dus lagere dosering (60g) voorkomt slappe uitloop en schimmel.'
+      }],
+      6: [{
+        text: 'Uitgebloeide bloemen knippen — als eenmaalbloeier: NIET knippen',
+        info: 'TYPE CHECKEN EERST:\n• Doorbloeiende klimroos (remontant): bloeit in golven. Uitgebloeide bloemen knippen tot eerste 5-bladig blad = tweede bloei in augustus/september.\n• Eenmaalbloeiende klimroos/rambler: bloeit één grote golf in juni. NIET knippen — je verliest de rozenbottels (mooi in herfst, voer voor vogels) en nieuwe bloei komt pas volgend jaar.\n\nTwijfel? Laat de eerste bloemen staan, kijk hoe de plant reageert. Komt er niets terug in augustus → eenmaalbloeier.'
+      }],
+      8: [{
+        text: 'Lange nieuwe scheuten horizontaal binden = meer bloei volgend jaar',
+        info: 'DE HACK voor muurrozen: rozen bloeien meer op horizontale takken dan verticale. De plant denkt "ik sta scheef" en maakt meer zijscheuten (= meer bloemen).\n\nTechniek: lange nieuwe hoofdscheuten (>50 cm) vastbinden in een horizontale of S-vormige lijn tegen de muur. Gebruik jute touw of speciale rozenbinders, niet ijzerdraad (snijdt in).\n\nOp een schaduwmuur is dit EXTRA belangrijk — je moet alles uit de plant halen wat erin zit. Verticale groei in schaduw = 90% blad, 10% bloem.'
+      }],
+      11: [{
+        text: 'Scheuten vastzetten tegen windschade',
+        info: 'Losse scheuten zwiepen bij wind = schuren langs muur = wonden = schimmel via schorswonden. Voor de winter alle lange scheuten controleren en bijbinden.\n\nJute draad werkt perfect — rot na 1-2 jaar vanzelf weg. Plastic draadjes zijn lelijk en snoeren wortels/takken af als plant dikker wordt.'
+      }]
+    },
+    innovatie: 'Horizontaal binden van scheuten stimuleert bloei op zijtakken. Cruciaal op muur — verticaal = alleen bovenin bloei.'
+  },
+  passiebloem: {
+    name: 'Passiebloem (Passiflora)', icon: '🌺', zone: 'muur',
+    sub: 'Klimmuur NW (320°)',
+    issues: 'Op NW-muur EXTRA kwetsbaar voor voorjaarsvorst: muur warmt \'s ochtends traag op, knoppen blijven langer nat/koud. Wintervoet-bescherming essentieel. Vorstgevoelig (<-5°C), snelle groeier.',
+    tasks: {
+      3: [{
+        text: 'Afgestorven delen weg tot levend hout. Vaak flink terug — komt uit grond weer op',
+        info: 'Passiflora caerulea (de hardy passiebloem) bevriest vaak bovengronds in strenge winters, maar loopt uit vanuit de wortels. Dit is NORMAAL — niet in paniek opruimen.\n\nTest op levend hout: krabben met duimnagel aan bast. Groen eronder = levend. Bruin/dor = dood, weg.\n\nWerkwijze: knip terug tot waar je groen vindt. Soms betekent dat terug tot 20 cm boven de grond. Plant schiet in mei/juni vol uit.\n\nLet op: Passiflora is enorme groeier. Zelfs na terugsnoeien tot 20cm kan hij in één seizoen 3-4 meter teruggroeien.'
+      }],
+      5: [{
+        text: 'Compost of milde kamerplant-mest (niet te rijk = blad ipv bloem)',
+        info: 'Valkuil: veel tuiniers geven passiflora rijke mest → krijgen prachtig blad, weinig bloemen. Passiflora bloeit beter op arme grond.\n\nLichte compost of verdunde kamerplant-mest (halve dosis van wat op de fles staat) 1-2× per jaar. Geen tuinmest, geen kunstmest.\n\nAlternatief: helemaal niet bemesten en alleen een dun laagje compost in voorjaar. Werkt vaak beter.'
+      }],
+      7: [{
+        text: 'Lange scheuten inkorten om bloei te stimuleren',
+        info: 'Passiflora bloeit op nieuwe zijscheuten. Lange uitgegroeide tentakels zonder zijtakken = weinig bloemen. Inkorten stimuleert vertakking.\n\nKnip lange scheuten (>1 meter) terug met 1/3 tot 1/2. Elke zijscheut die na 2-3 weken uitkomt kan bloemen geven.\n\nOp schaduwmuur: dit is de HOOFDTRUC. Zonder snoei blijft hij klimmen, met snoei gaat hij bloeien.'
+      }],
+      10: [{
+        text: 'Bij strenge vorst (<-5°C voorspeld): voet afdekken met dik pak bladeren/stro',
+        info: 'De wortels zijn het waardevolst. Bovengrond mag wegvriezen (komt terug), wortels NIET.\n\nAfdekken: dikke laag (15-20 cm) droge bladeren, stro, of houtsnippers rond de voet, in een cirkel van 50 cm rond de stam. Eventueel nog een jute of tuinvliesdoek er overheen.\n\nNa laatste nachtvorst (april) afhalen, anders rotten de wortels door teveel vocht eronder.'
+      }],
+      11: [{
+        text: 'Wortelvoet winterbescherming',
+        info: 'Herhaling van oktober-taak: zorg dat voor de eerste strenge vorst (meestal december) de winterbescherming definitief ligt. Check nog even na een storm of alles goed ligt.'
+      }]
+    },
+    innovatie: 'Op beschutte muur overleeft hij in NL de meeste winters. Belangrijkste is wortelvoet beschermen — bovengrond mag wegvriezen, komt terug.'
+  },
+  klimhortensia: {
+    name: 'Klimhortensia', icon: '🌿', zone: 'muur',
+    sub: 'Klimmuur NW (320°)',
+    issues: 'NW-muur is IDEAAL voor klimhortensia: geen felle ochtendzon, milde avondzon, geen hittestress. Verklaart waarom hij bij jou zo goed groeit. Traag in eerste 2-3 jaar, daarna onstuitbaar.',
+    tasks: {
+      4: [{
+        text: 'Compost rondom voet — vochtminnend',
+        info: 'Klimhortensia houdt van vochtige grond. Compost-mulch houdt vocht vast in zomer en voedt de plant langzaam.\n\nLaag van 3-5 cm compost of goed verteerde bladcompost rond de voet in een cirkel van 60 cm. Niet tegen de stam. Jaarlijks herhalen.\n\nOp een schaduwmuur is dit dé plant die het beste gedijt — past natuurlijk bij de omstandigheden. Geef hem 2-3 jaar geduld en hij wordt spectaculair.'
+      }],
+      6: [{
+        text: 'Uitgebloeide bloemen kunnen blijven (mooi in winter) of eraf',
+        info: 'Klimhortensia bloeit met grote witte lacecap-schermen in juni. Na bloei worden ze bruin en blijven prachtig in de winter staan — rijpvorst erop is adembenemend.\n\nOptie 1: laat staan tot februari, dan knip je de oude bloemschermen weg vlak boven een knop.\n\nOptie 2: knip direct na bloei in juli weg — planter ziet dan netter uit, maar je mist het winter-effect.\n\nBij jouw schaduwmuur: aanrader om te laten staan. Weinig anders is decoratief daar in de winter.'
+      }],
+      7: [{
+        text: 'Scheuten die van muur afstaan bijsnoeien',
+        info: 'Klimhortensia hecht met hechtwortels aan de muur, maar sommige scheuten groeien recht naar buiten. Zien er wild uit en kunnen afknappen.\n\nKnip scheuten die meer dan 30 cm naar buiten steken terug. Zo blijft de plant strak tegen de muur en benut hij alle licht optimaal.\n\nLet op: hechtwortels kunnen voegwerk beschadigen. Check jaarlijks bij zachte/oude voegen. Bij twijfel: kleiner houden of op een klimrek voor de muur.'
+      }],
+      8: [{
+        text: 'Bij droogte diep water — bladeren verwelken als eerste signaal',
+        info: 'Klimhortensia is de waterslurpende van de muurplanten. Verwelking is het eerste teken dat hij droog staat. Niet paniek — diep water geven en hij herstelt.\n\nDiep water = 10-15L aan de voet in één gieter, niet een snelle spuit. Water moet 30-40 cm diep trekken.\n\nBij langdurige droogte: 1-2× per week diep water. Mulch helpt enorm.'
+      }]
+    },
+    innovatie: 'Perfecte combinatie met sterjasmijn en klimroos op dezelfde muur: verschillende bloeitijden = muur bloeit april-september.'
+  },
+  sterjasmijn: {
+    name: 'Sterjasmijn (Trachelospermum)', icon: '⭐', zone: 'muur',
+    sub: 'Klimmuur NW (320°)',
+    issues: 'NW-muur: warme avondzon goed voor geur, maar jonge bladeren kwetsbaar bij late voorjaarsvorst (trage ochtend-opwarming). Groenblijvend, vorstgevoelig tot -8°C. Heerlijk geurend in juni-juli.',
+    tasks: {
+      4: [{
+        text: 'Afgestorven/bevroren delen weg na laatste nachtvorst',
+        info: 'Sterjasmijn kan in strenge winters deels terugvriezen. Herkenning: bruine, slappe, gerimpelde blaadjes (vs. normaal stevig donkergroen glanzend blad).\n\nWacht tot half april (laatste nachtvorst voorbij). Knip dan bevroren delen terug tot levend hout — krab-test met duimnagel op bast: groen = levend, bruin = dood.\n\nIn jouw schaduwsituatie is winterschade waarschijnlijker dan op een zuidmuur. Geduld: sterjasmijn is zeer herstellingsvriendelijk, loopt nieuw uit vanuit oud hout.'
+      }],
+      5: [{
+        text: 'Lichte bemesting, niet te rijk',
+        info: 'Sterjasmijn bloeit beter op arme grond. Te veel mest = blad zonder bloemen.\n\nLichte hand compost in het voorjaar, of een milde organische mest (verdund volgens instructie). Geen rijke tuinmest.\n\nOp schaduwmuur is mest bijna overbodig — de plant groeit langzamer, verbruikt minder voedingsstoffen.'
+      }],
+      8: [{
+        text: 'Na bloei lichte vormsnoei — niet te zwaar',
+        info: 'Sterjasmijn bloeit in juni-juli op hout van vorig jaar. Dus: NOOIT in voorjaar hard snoeien (dan snijd je alle knoppen weg).\n\nJuiste moment: direct na bloei (augustus). Kort lange scheuten in met maximaal 1/3, vorm corrigeren. Zo krijgt de plant tijd om nieuwe scheuten te maken die volgend jaar bloeien.\n\nBij grote overgroei: beter verspreid snoeien over 2-3 jaar dan in één keer alles terug. Sterjasmijn wordt zuinig met bloei na harde snoei.'
+      }],
+      11: [{
+        text: 'Bij strenge vorst voorspeld: voet afdekken, evt. hele plant met vliesdoek',
+        info: 'Vorstgrens ligt rond -8°C, maar jonge planten en planten op schaduwplek zijn kwetsbaarder.\n\nVoet: 10-15 cm mulch van bladeren/stro rond de stam.\n\nHele plant (optioneel bij voorspelling van <-10°C): vliesdoek (frostguard) losjes omwikkelen, vastzetten met jute touw. Overdag laten zitten, haalt licht en water door. Afhalen na laatste vorst.\n\nGouden tip: oude jutezakken of karton werken ook — zolang de plant niet luchtdicht wordt ingepakt (condens = rot).'
+      }]
+    },
+    innovatie: 'Tegen een muur op het zuiden overleeft hij prima, in schaduw kwetsbaarder. Jouw muur achter heeft weinig zon = wintercheck extra belangrijk.'
+  },
+  kruiden: {
+    name: 'Kruidenborder', icon: '🌿', zone: 'achter',
+    sub: 'Tegen buurschuur links, halverwege tuin',
+    issues: 'Warme ZO-expositie tegen bakstenen buurschuur = ideaal warmte-microklimaat voor mediterrane kruiden. Muur accumuleert ochtend/middagzon. Baksteen reflecteert warmte. Let op drainage — kruiden haten natte voeten.',
+    tasks: {
+      4: [{
+        text: 'Rozemarijn: dode wintertakken eruit. Tijm: 1/3 terug voor compacte groei. Citroenmelisse: oude stengels weg',
+        info: 'VOORJAARSOPKNAPBEURT:\n\n• ROZEMARIJN: alleen duidelijk bruine/droge takken weghalen. Krab-test: bast doorkrabben, groen eronder = levend, bruin = dood. Rozemarijn heeft vaak wat winterschade op NL-breedte, maar meestal komt hij goed terug.\n\n• TIJM: globaal 1/3 terug. Als je te weinig snoeit wordt hij in het midden kaal en houterig. Niet in het houtige deel snoeien — alleen in groen blad.\n\n• CITROENMELISSE: vorig jaar\'s stengels compleet weghalen. De plant komt vanuit de wortels weer op. Als hij gewoekerd heeft: nu uitrooien en begrenzen (is een zeer agressieve uitloper). Overweeg een wortelbarrière.'
+      }],
+      5: [{
+        text: 'Check structuur border — zaailingen citroenmelisse weg',
+        info: 'Citroenmelisse zaait zichzelf agressief uit. Elke mei jaarlijks 30-50 nieuwe zaailingen opruimen = houdt border in bedwang. Kleine plantjes (2-5 cm) makkelijk uit te trekken, grotere worden taai.\n\nHoud tegelijk de balans in de gaten: als rozemarijn of tijm wordt overwoekerd door citroenmelisse, snoei de citroenmelisse dan flink terug.'
+      }],
+      6: [{
+        text: 'Regelmatig oogsten stimuleert groei — niet schroomen',
+        info: 'Kruiden oogsten = ze stimuleren om vol te groeien. Gebruik het!\n\n• ROZEMARIJN: lang takje afknippen vlak boven een vertakking. Plant maakt daaronder 2 nieuwe takken.\n• TIJM: hele takken bij de basis eraf. Snoei altijd tot waar je groen blad ziet.\n• CITROENMELISSE: grote hoeveelheden weghalen = welkom. Maak thee, siroop, voeg toe aan salades.\n\nGemiddelde "uit de tuin" kruiden bevatten méér etherische oliën dan supermarktkruiden → sterkere smaak.'
+      }],
+      7: [{
+        text: 'Tijm bloei = bijenmagneet, laat deel staan',
+        info: 'Tijm bloeit in juli met kleine paarse/roze bloemetjes. Bijen en zweefvliegen zijn er dol op — perfect samen met je vlinderstruik en appelbomen in de tuin.\n\nTactiek: laat 60-70% van de tijm in bloei staan, oogst 30-40% voor de keuken (bloei + blad = extra aromatisch). Na bloei: flink terugsnoeien voor tweede groei.'
+      }],
+      9: [{
+        text: 'Laatste oogst drogen voor wintervoorraad',
+        info: 'DROGEN BINNENSHUIS:\n\n• ROZEMARIJN: takjes in bundel, ophangen in droge warme ruimte (keuken, zolder) — 1-2 weken drogen. Daarna luchtdicht in pot.\n\n• TIJM: bundeltjes ondersteboven ophangen, 1-2 weken. Ritselen dan de blaadjes zo eraf.\n\n• CITROENMELISSE: blaadjes van stengel plukken, uitspreiden op theedoek, ~1 week drogen. Daarna in pot. Ruikt nog maanden heerlijk.\n\nZelf gedroogd = 3-4× intenser dan supermarkt. Gaat ongeveer 1 jaar mee.'
+      }],
+      11: [{
+        text: 'Rozemarijn beschermen bij strenge vorst (<-10°C): jute doek',
+        info: 'NL-winters zijn meestal mild genoeg voor rozemarijn, maar bij een koudegolf (<-10°C meerdere nachten):\n\n• Jute doek losjes rond de plant\n• Strobed rond de voet (niet tegen stam — rotting)\n• Bij zeer strenge winter: overwegen een tak/stek binnenshuis op watervoortplanten — verzekering\n\nCitroenmelisse sterft bovengronds af, komt uit wortels weer op — geen bescherming nodig.\nTijm is zeer winterhard — ook geen bescherming nodig.'
+      }]
+    },
+    innovatie: 'De ZO-baksteen-muur is perfect microklimaat. Wil je uitbreiden? Lavendel past ook (warme droge voet), salie, oregano. Deze plek heeft potentieel voor een heuse mediterrane kruidentuin. Hosta\'s aan beide uiteinden compenseren voor meer schaduwrijke hoeken.'
+  },
+  sloot: {
+    name: 'Sloot (L-vorm)', icon: '🌊', zone: 'achter',
+    sub: 'Linkerkant vanaf knotwilgen + achterkant (vanaf schuur tot achter oude boomhut)',
+    issues: 'L-vorm: begint links bij knotwilgen, stopt ergens bij buurschuur/konijnen, start weer achter bij schuur-links-achter en loopt door tot rechts-achter voorbij oude boomhut. Geen schouwplicht, ~5 maanden per jaar water. Zelf niet verplicht onderhoud, wel aanbevolen tegen dichtslibben.',
+    tasks: {
+      3: [{
+        text: 'Oever controleren op instorting na winter',
+        info: 'Winter kan oevers doen verzakken door bevriezing/dooi. Loop de hele L-vorm langs (links én achter) en check:\n\n• Grote stukken aarde in de sloot = oever aan het inzakken\n• Holtes in de wand = muskusrat of rat kolonie\n• Overhangende grasplaggen = onstabiel, kunnen invallen\n\nBij serieuze verzakkingen: aanvullen met grond + beplanten voor stabiliteit (oeverplanten hebben wortelnet dat erosie tegengaat).'
+      }],
+      5: [{
+        text: 'Overmatig riet/lisdodde beperken',
+        info: 'Riet, lisdodde en grote zegge zijn gewenst voor ecologie MAAR overwoekeren de sloot snel. Eens per jaar afzetten tot stoppel = ze komen terug, maar beheerst.\n\nMoment: mei (voor bloei). Met bosmaaier of zeis, op 10-20 cm boven waterpeil. Materiaal afvoeren (composteren op eigen erf of GFT).\n\nLAAT EEN DEEL STAAN: 30% van de begroeiing intact = schuilplaats voor kikkers, waterjuffers, libellenlarven. Nooit alles tegelijk weghalen.'
+      }],
+      8: [{
+        text: 'Bij droogte: natuurlijk proces, niet ingrijpen',
+        info: 'Zomerdroogte in sloot is ecologisch waardevol. Amfibieën (salamanders, padden) zoeken vochtige schuilplekken, larven van libellen overleven in modder.\n\nNIET doen: water toevoegen uit leidingwater (chloor + andere chemicaliën = rampzalig voor sloot-ecosysteem). Niet "schoonmaken" terwijl droog.\n\nWel: libellen en kikkers spotten — geniet van het mini-ecosysteem.'
+      }],
+      10: [{
+        text: 'Bladeren uit sloot halen — voorkomt dichtslibben',
+        info: 'BELANGRIJK voor jouw situatie: de sloot ACHTER ligt direct tegen het bos = enorme bladval in oktober-november.\n\nBladeren in water = vergaan tot slib = sloot wordt ondiep = minder waterberging bij regen = sneller vol/droog.\n\nMethode:\n• Lange hark ("slootkrat") voor rechtstreeks uit water scheppen\n• Hoge laarzen / oude kleding\n• Bladeren op oever leggen om te drogen, daarna naar compost of achterin border als mulch\n\nEens per 2 weken tijdens bladseizoen = voldoende. Niet alles tegelijk is een project van een halve dag.'
+      }],
+      11: [{
+        text: 'Oeverplanten die omvallen terugknippen',
+        info: 'Als oeverbeplanting is verdord en dreigt in het water te vallen: terugknippen boven waterpeil. Laat 10-20 cm staan — holle stengels zijn winter-schuilplek voor insecten.\n\nGras op oever kan lang doorgroeien — 1× per jaar afzetten met bosmaaier, grote stukken afvoeren.'
+      }]
+    },
+    innovatie: 'Een periodiek droge sloot in L-vorm = uniek biotoop voor amfibieën (kamsalamander!), libellen, oeverplanten. Plant dotterbloem, gele lis, echte koekoeksbloem, grote wederik — maak er een mini-natuurstrook van. Bos naast je = natuurlijke aansluiting = snelle kolonisatie door wilde soorten.'
+  }
+};
+
+const ORDER_ALERTS = {
+  1: [
+    { item: 'Graszaad (schaduw + zon)', reason: 'Bijzaaien maart — op tijd bestellen voorkomt uitverkocht' },
+    { item: 'Mezenkasten (gaatje 28 mm)', reason: 'Ophangen jan/feb — koolmezen eten spinselmotrupsen' },
+    { item: 'Minerale olie (Promanal)', reason: 'Spuiten eind februari tegen spinselmot-eitjes' },
+    { item: 'Rugsproeier/drukspuit 5L + veiligheidsbril + handschoenen', reason: 'Nodig voor olie-spuiten feb + Bt-spuiten mei — zie "Spuit-gids"' },
+    { item: 'Polymeer-voegzand (optioneel)', reason: 'Voor duurzame terras-oplossing zonder onkruid' }
+  ],
+  2: [
+    { item: 'Tuinkalk', reason: 'Strooien februari/maart tegen mos' },
+    { item: 'Rozenmest + vruchtboommest', reason: 'Voor voorjaarsbemesting maart' },
+    { item: 'Bt-product (XenTari of Delfin)', reason: 'In huis hebben voor bij uitbraak spinselmot in mei' }
+  ],
+  3: [
+    { item: 'Compost of cacaodoppen (mulch)', reason: 'Mulchen april/mei borders + rozen' },
+    { item: 'Sedum-mest + tuinkalk', reason: 'Jaarlijkse voorjaarsbeurt groen dak (zie sedum-protocol)' },
+    { item: 'Feromoonvallen appelbloesemkever', reason: 'Plaatsen in appelbomen april' }
+  ],
+  4: [
+    { item: 'Bt-product (XenTari/Delfin) — NU BESTELLEN', reason: 'Spinselmot: spuiten direct na de bloei (begin mei), te laat = geen effect' }
+  ],
+  5: [
+    { item: 'Hortensia-mest + ijzer', reason: 'Voorkom geelverkleuring zomer' }
+  ],
+  7: [
+    { item: 'Najaars-gazonmest (kaliumrijk)', reason: 'Strooien september' },
+    { item: 'Sedum-substraat (indien 8+ jaar oud dak)', reason: 'Top-up in september voor lange-termijn behoud groen dak' }
+  ],
+  8: [
+    { item: 'Lijmband/fruitboomband', reason: 'Rond appelstammen oktober tegen wintervlinder' },
+    { item: 'NPV-lidmaatschap (€35)', reason: 'Voor determinatiedag appels oktober/november — npv-pomospost.nl' }
+  ],
+  10: [
+    { item: 'Jute of winterdoek', reason: 'Vorstbescherming rozemarijn + passiebloem bij strenge winter' }
+  ]
+};
+
+const WEATHER_SCENARIOS = [
+  {
+    icon: '❄️',
+    color: '#4a6b8a',
+    title: 'Nachtvorst in bloeitijd (maart–april)',
+    tips: [
+      'Appel/peer/sierkers bloesem: vliesdoek \'s nachts, overdag eraf',
+      'Vorst op bloesem = geen fruit dat jaar',
+      'Passiebloem en sterjasmijn: voet afdekken met dik bladpak'
+    ]
+  },
+  {
+    icon: '🔥',
+    color: '#a85c3a',
+    title: 'Hittegolf (>30°C, 5+ dagen)',
+    tips: [
+      'Hortensia\'s: \'s ochtends diep water (10L/plant), niet over blad',
+      'Gazon hoger maaien (6-7 cm), laat gerust bruin worden',
+      'Klimplanten muur achter: oever druipdicht = diep water aan voet',
+      'Potten: dagelijks water, evt. verplaatsen naar schaduw'
+    ]
+  },
+  {
+    icon: '💧',
+    color: '#6b8a5c',
+    title: 'Droogte (3+ weken geen regen)',
+    tips: [
+      'Prioriteit: nieuwe aanplant > vruchtbomen > hortensia > border > gazon',
+      'Sedum-dak: na 3 weken 1× goed beregenen',
+      'Gazon mag bruin, herstelt vanzelf bij regen',
+      'Sloot droog = normaal, niet ingrijpen'
+    ]
+  },
+  {
+    icon: '🌬️',
+    color: '#6a6b8a',
+    title: 'Storm/harde wind voorspeld',
+    tips: [
+      'Klimplanten nalopen op steun (vooral passiebloem en klimroos)',
+      'Lange rozenscheuten alvast inkorten tegen windschade',
+      'Potten naar luwte tegen huis',
+      'Appelbomen: losse takken controleren'
+    ]
+  },
+  {
+    icon: '❄️',
+    color: '#4a5d7a',
+    title: 'Strenge vorst (<-10°C)',
+    tips: [
+      'Rozemarijn afdekken met jute',
+      'Passiebloem: voet dik afdekken, bovengrond mag wegvriezen',
+      'Sterjasmijn: vliesdoek over plant',
+      'Potten tegen gevel of in schuur',
+      'Uitgebloeide hortensia-bloemen LATEN zitten = knopbescherming'
+    ]
+  }
+];
+
+const INNOVATIONS = [
+  { title: 'Bokashi-compostbak', desc: 'Fermenteert keukenafval in 2 weken tot bodemverbeteraar. Geen stank, werkt binnen. Ideaal voor rozen en vruchtbomen. Investering ~€60.' },
+  { title: 'Regenton + druppelslang', desc: 'Regenton op druppelslang door border en rond vruchtbomen. Gratis water, diep wortelen, 70% minder verdamping dan sproeien.' },
+  { title: 'Mycorrhiza bij nieuwe aanplant', desc: 'Schimmelsporen die symbiose aangaan met wortels. 50% betere groei, droogtetoleranter. €15 per zakje, cruciaal voor vruchtbomen.' },
+  { title: 'pH-meter (€20)', desc: 'Laat zien waar je grond zuur of alkalisch is. Gericht kalken ipv hele tuin. Voorkomt over-kalking rond hortensia\'s (die willen juist zuur).' },
+  { title: 'Inheemse bufferzone naar bos', desc: 'Smalle strook langs bos met brandnetel, look-zonder-look, salomonszegel. Ecologische verbinding, trekt natuurlijke plaagbestrijders aan.' },
+  { title: 'Mulchmaaier ipv opvang', desc: '30% van gazon-stikstof gratis. Minder werk, minder afval, betere bodem.' },
+  { title: 'Nematoden tegen emelten', desc: 'Bij kale plekken door emelten: in augustus/september biologische nematoden via gieter. 100% biologisch, werkt in 1 seizoen.' },
+  { title: 'Slootstrook natuurlijk maken', desc: 'Dotterbloem, gele lis, echte koekoeksbloem planten. Periodieke droogte = zeldzaam biotoop voor amfibieën en libellen.' },
+  { title: 'Sedumdak uitbreiden', desc: 'Voeg huislook (Sempervivum), wilde tijm en kleine grassen toe. Langere bloei, meer soorten, geen extra onderhoud.' },
+  { title: 'Lijmband appelbomen (€5)', desc: 'Rond stam in oktober. Vangt vrouwtjes wintervlinder. Voorkomt rupsen in voorjaar zonder spuiten. Simpelste win van hele tuin.' }
+];
+
+// === STATE ===
+const state = {
+  month: new Date().getMonth() + 1, // 1-12
+  tab: 'taken',
+  zone: 'alle',
+  checked: {},
+  openInfo: {}
+};
+
+// Load checked state from localStorage
+try {
+  const saved = localStorage.getItem('tuin_checked_v1');
+  if (saved) state.checked = JSON.parse(saved);
+} catch(e) {}
+
+function saveChecked() {
+  try {
+    localStorage.setItem('tuin_checked_v1', JSON.stringify(state.checked));
+  } catch(e) {}
+}
+
+// === HELPERS ===
+function getTaskText(task) {
+  return typeof task === 'string' ? task : task.text;
+}
+function getTaskInfo(task) {
+  return typeof task === 'object' ? task.info : null;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// === RENDER MONTH SELECTOR ===
+function renderMonths() {
+  const el = document.getElementById('monthSelect');
+  el.innerHTML = MONTHS.map((m, i) => {
+    const mn = i + 1;
+    const cls = state.month === mn ? 'month-btn active' : 'month-btn';
+    return `<button class="${cls}" data-month="${mn}">${m}</button>`;
+  }).join('');
+  el.querySelectorAll('.month-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.month = parseInt(btn.dataset.month);
+      render();
+    });
+  });
+}
+
+// === RENDER TABS ===
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    render();
+  });
+});
+
+// === RENDER CONTENT ===
+function render() {
+  renderMonths();
+  const content = document.getElementById('content');
+
+  if (state.tab === 'taken') {
+    content.innerHTML = renderTakenTab();
+    attachTakenHandlers();
+  } else if (state.tab === 'planten') {
+    content.innerHTML = renderPlantenTab();
+    attachPlantenHandlers();
+  } else if (state.tab === 'bestellen') {
+    content.innerHTML = renderBestellenTab();
+  } else if (state.tab === 'weer') {
+    content.innerHTML = renderWeerTab();
+  } else if (state.tab === 'innovatie') {
+    content.innerHTML = renderInnovatieTab();
+  }
+}
+
+// === TAKEN TAB ===
+function renderTakenTab() {
+  const plantsWithTasks = Object.entries(PLANTS).filter(([key, plant]) => {
+    if (!plant.tasks[state.month]) return false;
+    if (state.zone !== 'alle' && plant.zone !== state.zone) return false;
+    return true;
+  });
+
+  let html = renderZoneFilter();
+
+  if (plantsWithTasks.length === 0) {
+    html += '<div class="empty">Geen taken deze maand voor deze zone.</div>';
+    return html;
+  }
+
+  plantsWithTasks.forEach(([key, plant]) => {
+    html += renderPlantCard(key, plant, state.month);
+  });
+
+  html += `<button class="reset-btn" onclick="resetChecks()">↺ Reset vinkjes deze maand</button>`;
+
+  return html;
+}
+
+function renderZoneFilter() {
+  const zoneKeys = ['alle', ...Object.keys(ZONES)];
+  return `<div class="zone-filter">${zoneKeys.map(z => {
+    const cls = state.zone === z ? 'zone-btn active' : 'zone-btn';
+    const label = z === 'alle' ? 'Alle zones' : (ZONES[z]?.icon + ' ' + ZONES[z]?.label);
+    return `<button class="${cls}" data-zone="${z}">${label}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderPlantCard(key, plant, month) {
+  const tasks = plant.tasks[month] || [];
+  const hasIssues = plant.issues && plant.issues.length > 0;
+
+  let html = `<div class="card ${hasIssues ? 'has-issues' : ''}">
+    <div class="card-header">
+      <div class="card-icon">${plant.icon}</div>
+      <div class="card-title">
+        <h3>${escapeHtml(plant.name)}</h3>
+        ${plant.sub ? `<div class="sub">${escapeHtml(plant.sub)}</div>` : ''}
+      </div>
+    </div>`;
+
+  if (hasIssues) {
+    html += `<div class="issues">⚠️ ${escapeHtml(plant.issues)}</div>`;
+  }
+
+  html += '<div class="tasks">';
+  tasks.forEach((task, idx) => {
+    const taskText = getTaskText(task);
+    const taskInfo = getTaskInfo(task);
+    const checkKey = `${month}-${key}-${idx}`;
+    const done = state.checked[checkKey];
+    const infoKey = `${key}-${idx}`;
+    const infoOpen = state.openInfo[infoKey];
+
+    html += `<div class="task ${done ? 'done' : ''}">
+      <div class="task-check ${done ? 'done' : ''}" data-check="${checkKey}">${done ? '✓' : ''}</div>
+      <div class="task-body">
+        <div class="task-text">${escapeHtml(taskText)}${taskInfo ? `<button class="task-info-btn" data-info="${infoKey}">i</button>` : ''}</div>
+        ${taskInfo ? `<div class="task-info ${infoOpen ? 'open' : ''}" data-info-box="${infoKey}">${escapeHtml(taskInfo)}</div>` : ''}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  if (plant.innovatie) {
+    html += `<div class="innovatie">💡 ${escapeHtml(plant.innovatie)}</div>`;
+  }
+
+  // Special: layout SVG for appelboom_layout
+  if (key === 'appelboom_layout' && month === 4) {
+    html += renderAppelLayoutSVG();
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderAppelLayoutSVG() {
+  return `<svg class="layout-svg" viewBox="0 0 300 250" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="280" height="230" fill="#e8e4d3" stroke="#8a7d5c" stroke-width="1" rx="4"/>
+    <text x="150" y="25" font-size="10" text-anchor="middle" fill="#6b6247" font-family="Georgia">ACHTERTUIN (schema)</text>
+    <rect x="30" y="200" width="240" height="30" fill="#c9b890" stroke="#8a7d5c"/>
+    <text x="150" y="220" font-size="10" text-anchor="middle" fill="#4a3a2a" font-family="Georgia">terras</text>
+    <circle cx="80" cy="190" r="16" fill="#8a9479" stroke="#4a5d3a"/>
+    <text x="80" y="193" font-size="9" text-anchor="middle" fill="white" font-family="Georgia">R</text>
+    <text x="80" y="175" font-size="8" text-anchor="middle" fill="#4a5d3a" font-family="Georgia">Rechts</text>
+    <circle cx="210" cy="190" r="16" fill="#8a9479" stroke="#4a5d3a"/>
+    <text x="210" y="193" font-size="9" text-anchor="middle" fill="white" font-family="Georgia">L</text>
+    <text x="210" y="175" font-size="8" text-anchor="middle" fill="#4a5d3a" font-family="Georgia">Links</text>
+    <circle cx="150" cy="70" r="20" fill="#6b7a5a" stroke="#3a4a2a"/>
+    <text x="150" y="73" font-size="10" text-anchor="middle" fill="white" font-family="Georgia">A</text>
+    <text x="150" y="50" font-size="8" text-anchor="middle" fill="#4a5d3a" font-family="Georgia">Achterin</text>
+    <text x="150" y="110" font-size="8" text-anchor="middle" fill="#6b6247" font-family="Georgia">(laatbloeier)</text>
+    <line x1="80" y1="190" x2="210" y2="190" stroke="#8a7d5c" stroke-dasharray="3,3"/>
+    <text x="145" y="205" font-size="7" text-anchor="middle" fill="#6b6247" font-family="Georgia">8m</text>
+    <line x1="145" y1="180" x2="150" y2="90" stroke="#8a7d5c" stroke-dasharray="3,3"/>
+    <text x="175" y="145" font-size="7" text-anchor="middle" fill="#6b6247" font-family="Georgia">20m</text>
+    <rect x="20" y="30" width="260" height="20" fill="#a8a078" opacity="0.4" rx="2"/>
+    <text x="150" y="43" font-size="8" text-anchor="middle" fill="#4a5d3a" font-family="Georgia">← bos →</text>
+    <rect x="60" y="150" width="30" height="8" fill="#fff8c5" stroke="#d4c470" rx="1"/>
+    <text x="75" y="145" font-size="6" text-anchor="middle" fill="#6b6247" font-family="Georgia">mezenkast</text>
+    <rect x="135" y="115" width="30" height="8" fill="#fff8c5" stroke="#d4c470" rx="1"/>
+    <text x="150" y="135" font-size="6" text-anchor="middle" fill="#6b6247" font-family="Georgia">mezenkast</text>
+  </svg>`;
+}
+
+function attachTakenHandlers() {
+  document.querySelectorAll('.zone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.zone = btn.dataset.zone;
+      render();
+    });
+  });
+  document.querySelectorAll('[data-check]').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.check;
+      state.checked[key] = !state.checked[key];
+      saveChecked();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-info]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.info;
+      state.openInfo[key] = !state.openInfo[key];
+      render();
+    });
+  });
+}
+
+function resetChecks() {
+  if (!confirm('Alle vinkjes voor ' + MONTHS[state.month-1] + ' wissen?')) return;
+  const prefix = state.month + '-';
+  Object.keys(state.checked).forEach(k => {
+    if (k.startsWith(prefix)) delete state.checked[k];
+  });
+  saveChecked();
+  render();
+}
+window.resetChecks = resetChecks;
+
+// === PLANTEN TAB ===
+function renderPlantenTab() {
+  const sorted = Object.entries(PLANTS).sort((a, b) => a[1].name.localeCompare(b[1].name, 'nl'));
+  let html = '<div class="info-box">Klik op een plant voor de details. Je ziet dan alle maandelijkse taken en extra info.</div>';
+  const byZone = {};
+  sorted.forEach(([key, plant]) => {
+    if (!byZone[plant.zone]) byZone[plant.zone] = [];
+    byZone[plant.zone].push([key, plant]);
+  });
+  Object.keys(ZONES).forEach(zoneKey => {
+    if (!byZone[zoneKey]) return;
+    html += `<div class="order-month-label">${ZONES[zoneKey].icon} ${ZONES[zoneKey].label}</div>`;
+    byZone[zoneKey].forEach(([key, plant]) => {
+      html += `<a class="plant-link" data-plant="${key}" href="#">
+        ${plant.icon} ${escapeHtml(plant.name)}
+        ${plant.sub ? `<div class="p-sub">${escapeHtml(plant.sub)}</div>` : ''}
+      </a>`;
+    });
+  });
+  return html;
+}
+
+function attachPlantenHandlers() {
+  document.querySelectorAll('[data-plant]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      showPlantDetail(el.dataset.plant);
+    });
+  });
+}
+
+function showPlantDetail(key) {
+  const plant = PLANTS[key];
+  if (!plant) return;
+  let html = `<button class="reset-btn" onclick="state.tab='planten';render();">← Terug naar lijst</button>
+    <div class="card ${plant.issues ? 'has-issues' : ''}">
+      <div class="card-header">
+        <div class="card-icon" style="font-size:28px">${plant.icon}</div>
+        <div class="card-title">
+          <h3 style="font-size:18px">${escapeHtml(plant.name)}</h3>
+          ${plant.sub ? `<div class="sub">${escapeHtml(plant.sub)}</div>` : ''}
+        </div>
+      </div>`;
+  if (plant.issues) html += `<div class="issues">⚠️ ${escapeHtml(plant.issues)}</div>`;
+  html += '<h4 style="margin:12px 0 6px;font-weight:normal;color:#6b6247;font-size:13px;text-transform:uppercase;letter-spacing:1px">Taken per maand</h4>';
+  for (let m = 1; m <= 12; m++) {
+    if (!plant.tasks[m]) continue;
+    html += `<div style="margin:10px 0;padding:8px 10px;background:#f4f1ea;border-radius:6px">
+      <div style="font-size:12px;color:#8a7d5c;font-weight:600;margin-bottom:4px">${MONTHS[m-1]}</div>`;
+    plant.tasks[m].forEach(task => {
+      const text = getTaskText(task);
+      const info = getTaskInfo(task);
+      html += `<div style="font-size:14px;margin:4px 0">• ${escapeHtml(text)}</div>`;
+      if (info) html += `<div style="font-size:12px;color:#4a5d3a;margin-left:12px;margin-bottom:6px;white-space:pre-wrap;line-height:1.6">${escapeHtml(info)}</div>`;
+    });
+    html += '</div>';
+  }
+  if (plant.innovatie) html += `<div class="innovatie">💡 ${escapeHtml(plant.innovatie)}</div>`;
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+window.state = state;
+window.render = render;
+
+// === BESTELLEN TAB ===
+function renderBestellenTab() {
+  let html = '<div class="info-box"><strong>Tip:</strong> bestel iets 1 maand voor je het nodig hebt. Sommige zaden/middelen zijn uitverkocht in piekperiodes.</div>';
+  const currentMonth = state.month;
+  // Current month first
+  const orderedMonths = [];
+  for (let i = 0; i < 12; i++) {
+    const m = ((currentMonth - 1 + i) % 12) + 1;
+    if (ORDER_ALERTS[m] && ORDER_ALERTS[m].length) orderedMonths.push(m);
+  }
+  orderedMonths.forEach(m => {
+    const isNow = m === currentMonth;
+    html += `<div class="order-month-label">${MONTHS[m-1]}${isNow ? ' — NU' : ''}</div>`;
+    ORDER_ALERTS[m].forEach(alert => {
+      html += `<div class="order-card">
+        <div class="order-item">${escapeHtml(alert.item)}</div>
+        <div class="order-reason">${escapeHtml(alert.reason)}</div>
+      </div>`;
+    });
+  });
+  return html;
+}
+
+// === WEER TAB ===
+function renderWeerTab() {
+  let html = '<div class="info-box">Dit zijn vaste weerscenario\'s met actieplannen. De app toont geen live weer — vraag Claude direct als je specifieke weersverwachting wilt matchen aan taken.</div>';
+  WEATHER_SCENARIOS.forEach(s => {
+    html += `<div class="weather-card" style="border-left-color:${s.color}">
+      <h4><span class="emo">${s.icon}</span>${escapeHtml(s.title)}</h4>
+      <ul>${s.tips.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+    </div>`;
+  });
+  return html;
+}
+
+// === INNOVATIE TAB ===
+function renderInnovatieTab() {
+  let html = '<div class="info-box">Ideeën om de tuin efficiënter, leuker of duurzamer te maken.</div>';
+  INNOVATIONS.forEach(i => {
+    html += `<div class="inno-card">
+      <h4>${i.icon} ${escapeHtml(i.title)}</h4>
+      <div class="inno-desc">${escapeHtml(i.description)}</div>
+      <div class="inno-meta">
+        ${i.cost ? `<span>💰 ${escapeHtml(i.cost)}</span>` : ''}
+        ${i.time ? `<span>⏱ ${escapeHtml(i.time)}</span>` : ''}
+        ${i.impact ? `<span>📊 ${escapeHtml(i.impact)}</span>` : ''}
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+// Initial render
+render();
+
+// Register service worker for offline use (optional)
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // Offline via browser cache is automatic for single-file apps
+}
+</script>
+</body>
+</html>
