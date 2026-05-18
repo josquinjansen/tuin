@@ -344,6 +344,45 @@
     line-height: 1.6;
   }
   .info-box strong { color: #2c3a26; }
+
+  /* Sync */
+  header { position: relative; }
+  .sync-btn {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(255,255,255,0.15); border: none;
+    font-size: 17px; cursor: pointer; border-radius: 6px;
+    padding: 4px 7px; line-height: 1; color: white;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sync-modal {
+    display: none; position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.55); z-index: 200;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .sync-modal.open { display: flex; }
+  .sync-box {
+    background: #f4f1ea; border-radius: 12px;
+    padding: 24px 20px; width: 100%; max-width: 340px;
+    font-family: Georgia, serif;
+  }
+  .sync-box h3 { margin: 0 0 8px; font-size: 17px; color: #2c3a26; }
+  .sync-box p { font-size: 13px; color: #4a4435; margin: 0 0 14px; line-height: 1.5; }
+  .sync-box input {
+    width: 100%; padding: 10px 12px; border: 1px solid #c4bc9f;
+    border-radius: 6px; font-size: 13px; font-family: monospace;
+    background: white; margin-bottom: 8px; box-sizing: border-box;
+  }
+  .sync-msg { font-size: 12px; color: #8a4a2f; margin-bottom: 10px; }
+  .sync-btn-row { display: flex; gap: 8px; margin-top: 4px; }
+  .sync-btn-row button {
+    flex: 1; padding: 10px; border: none; border-radius: 6px;
+    font-size: 14px; cursor: pointer; font-family: Georgia, serif;
+  }
+  .sync-btn-ok { background: #4a5d3a; color: white; }
+  .sync-btn-cancel { background: #d4cdb8; color: #2c3a26; }
+  .sync-clear { font-size: 12px; color: #8a4a2f; text-align: center;
+    margin-top: 12px; cursor: pointer; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -351,6 +390,7 @@
 <header>
   <h1>🌿 Tuin-onderhoud</h1>
   <div class="sub">700m² · bos + sloot · sedum dak · 3 appelbomen</div>
+  <button class="sync-btn" id="syncBtn" title="Sync instellen">☁️</button>
 </header>
 
 <div class="month-select" id="monthSelect"></div>
@@ -1468,7 +1508,127 @@ function saveChecked() {
   try {
     localStorage.setItem('tuin_checked_v1', JSON.stringify(state.checked));
   } catch(e) {}
+  syncPush();
 }
+
+// === GITHUB SYNC ===
+const SYNC_REPO = 'josquinjansen/tuin';
+const SYNC_FILE = 'vinkjes.json';
+
+let syncToken = localStorage.getItem('tuin_sync_token') || '';
+let syncSha = localStorage.getItem('tuin_sync_sha') || null;
+let syncBusy = false;
+
+function setSyncIcon(icon, title) {
+  const btn = document.getElementById('syncBtn');
+  if (btn) { btn.textContent = icon; btn.title = title; }
+}
+
+async function syncLoad() {
+  if (!syncToken) return;
+  setSyncIcon('⟳', 'Laden...');
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${SYNC_REPO}/contents/${SYNC_FILE}`,
+      { headers: { Authorization: `Bearer ${syncToken}`, 'X-GitHub-Api-Version': '2022-11-28' } }
+    );
+    if (r.status === 404) { await syncPush(); return; }
+    if (!r.ok) { setSyncIcon('⚠️', 'Sync mislukt — tik om opnieuw te proberen'); return; }
+    const data = await r.json();
+    syncSha = data.sha;
+    localStorage.setItem('tuin_sync_sha', syncSha);
+    const remote = JSON.parse(atob(data.content.replace(/\s/g, '')));
+    // Samenvoegen: alles wat op een apparaat ooit afgevinkt was, blijft afgevinkt
+    Object.assign(state.checked, remote);
+    localStorage.setItem('tuin_checked_v1', JSON.stringify(state.checked));
+    render();
+    setSyncIcon('☁️', 'Gesynchroniseerd');
+  } catch(e) {
+    setSyncIcon('⚠️', 'Sync mislukt — tik om opnieuw te proberen');
+  }
+}
+
+async function syncPush() {
+  if (!syncToken || syncBusy) return;
+  syncBusy = true;
+  setSyncIcon('⟳', 'Opslaan...');
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(state.checked))));
+    const body = { message: 'tuin sync', content, branch: 'main' };
+    if (syncSha) body.sha = syncSha;
+    const r = await fetch(
+      `https://api.github.com/repos/${SYNC_REPO}/contents/${SYNC_FILE}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${syncToken}`,
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify(body)
+      }
+    );
+    if (r.ok) {
+      const data = await r.json();
+      syncSha = data.content.sha;
+      localStorage.setItem('tuin_sync_sha', syncSha);
+      setSyncIcon('☁️', 'Gesynchroniseerd');
+    } else if (r.status === 409) {
+      // SHA conflict: opnieuw laden en daarna pushen
+      syncSha = null;
+      localStorage.removeItem('tuin_sync_sha');
+      syncBusy = false;
+      await syncLoad();
+    } else {
+      setSyncIcon('⚠️', 'Sync mislukt — tik om opnieuw te proberen');
+    }
+  } catch(e) {
+    setSyncIcon('⚠️', 'Sync mislukt — tik om opnieuw te proberen');
+  } finally {
+    syncBusy = false;
+  }
+}
+
+// Sync knop: open modal
+document.getElementById('syncBtn').addEventListener('click', async () => {
+  // Bij ⚠️ eerst opnieuw proberen in plaats van modal openen
+  const icon = document.getElementById('syncBtn').textContent;
+  if (icon === '⚠️' && syncToken) { await syncLoad(); return; }
+  document.getElementById('syncTokenInput').value = '';
+  document.getElementById('syncMsg').textContent = syncToken
+    ? 'Sync actief. Nieuw token plakken om te wijzigen, of verwijder hieronder.'
+    : 'Maak een GitHub token aan en plak het hier om vinkjes te synchroniseren tussen telefoon en desktop.';
+  document.getElementById('syncModal').classList.add('open');
+});
+document.getElementById('syncCancel').addEventListener('click', () => {
+  document.getElementById('syncModal').classList.remove('open');
+});
+document.getElementById('syncSave').addEventListener('click', async () => {
+  const val = document.getElementById('syncTokenInput').value.trim();
+  if (!val) { document.getElementById('syncModal').classList.remove('open'); return; }
+  if (!val.startsWith('ghp_') && !val.startsWith('github_pat_')) {
+    document.getElementById('syncMsg').textContent = 'Geen geldig GitHub token (moet beginnen met ghp_ of github_pat_).';
+    return;
+  }
+  syncToken = val;
+  syncSha = null;
+  localStorage.setItem('tuin_sync_token', syncToken);
+  localStorage.removeItem('tuin_sync_sha');
+  document.getElementById('syncModal').classList.remove('open');
+  await syncLoad();
+});
+document.getElementById('syncClear').addEventListener('click', () => {
+  if (!confirm('Sync uitschakelen op dit apparaat? Vinkjes blijven lokaal bewaard.')) return;
+  syncToken = '';
+  syncSha = null;
+  localStorage.removeItem('tuin_sync_token');
+  localStorage.removeItem('tuin_sync_sha');
+  setSyncIcon('☁️', 'Sync instellen');
+  document.getElementById('syncModal').classList.remove('open');
+});
+
+// Laad bij opstarten
+if (syncToken) syncLoad();
 
 // === HELPERS ===
 function getTaskText(task) {
@@ -1800,5 +1960,19 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   // Offline via browser cache is automatic for single-file apps
 }
 </script>
+
+<!-- Sync modal -->
+<div class="sync-modal" id="syncModal">
+  <div class="sync-box">
+    <h3>☁️ Sync instellen</h3>
+    <p id="syncMsg">Maak een GitHub token aan en plak het hier om vinkjes te synchroniseren tussen telefoon en desktop.</p>
+    <input type="password" id="syncTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off">
+    <div class="sync-btn-row">
+      <button class="sync-btn-cancel" id="syncCancel">Annuleren</button>
+      <button class="sync-btn-ok" id="syncSave">Opslaan &amp; sync</button>
+    </div>
+    <div class="sync-clear" id="syncClear">Sync uitschakelen op dit apparaat</div>
+  </div>
+</div>
 </body>
 </html>
