@@ -397,6 +397,20 @@
 
 <main id="content"></main>
 
+<!-- Sync modal -->
+<div class="sync-modal" id="syncModal">
+  <div class="sync-box">
+    <h3>☁️ Sync instellen</h3>
+    <p id="syncMsg">Maak een GitHub token aan en plak het hier om vinkjes te synchroniseren tussen telefoon en desktop.</p>
+    <input type="password" id="syncTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off">
+    <div class="sync-btn-row">
+      <button class="sync-btn-cancel" id="syncCancel">Annuleren</button>
+      <button class="sync-btn-ok" id="syncSave">Opslaan &amp; sync</button>
+    </div>
+    <div class="sync-clear" id="syncClear">Sync uitschakelen op dit apparaat</div>
+  </div>
+</div>
+
 <div class="tabs" id="tabs">
   <button class="tab-btn active" data-tab="taken"><span class="ico">✓</span>Taken</button>
   <button class="tab-btn" data-tab="planten"><span class="ico">🌿</span>Planten</button>
@@ -1960,19 +1974,5 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   // Offline via browser cache is automatic for single-file apps
 }
 </script>
-
-<!-- Sync modal -->
-<div class="sync-modal" id="syncModal">
-  <div class="sync-box">
-    <h3>☁️ Sync instellen</h3>
-    <p id="syncMsg">Maak een GitHub token aan en plak het hier om vinkjes te synchroniseren tussen telefoon en desktop.</p>
-    <input type="password" id="syncTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off">
-    <div class="sync-btn-row">
-      <button class="sync-btn-cancel" id="syncCancel">Annuleren</button>
-      <button class="sync-btn-ok" id="syncSave">Opslaan &amp; sync</button>
-    </div>
-    <div class="sync-clear" id="syncClear">Sync uitschakelen op dit apparaat</div>
-  </div>
-</div>
 </body>
 </html>
